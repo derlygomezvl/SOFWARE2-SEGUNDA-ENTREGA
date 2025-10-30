@@ -22,8 +22,8 @@ services:
       - GATEWAY_READ_TIMEOUT=30000
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_USER}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASS}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
     depends_on:
       identity:
         condition: service_healthy
@@ -68,8 +68,8 @@ services:
       - DATABASE_PASSWORD=${IDENTITY_DB_PASS}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_USER}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASS}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -110,8 +110,8 @@ services:
       - DATABASE_PASSWORD=${SUBMISSION_DB_PASS}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_USER}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASS}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
       - FILE_STORAGE_PATH=/app/uploads
     volumes:
       - submission-uploads:/app/uploads
@@ -155,8 +155,8 @@ services:
       - DATABASE_PASSWORD=${NOTIFICATION_DB_PASS}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_USER}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASS}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USERNAME=${SMTP_USERNAME}
@@ -219,7 +219,7 @@ services:
           cpus: '0.25'
           memory: 256M
 
-  # Base de datos PostgreSQL para Identity Service
+    # Base de datos PostgreSQL para Identity Service
   postgres-identity:
     image: postgres:15-alpine
     container_name: postgres-identity
@@ -235,7 +235,7 @@ services:
     networks:
       - trabajo-grado-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U ${IDENTITY_DB_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -247,9 +247,9 @@ services:
     container_name: postgres-submission
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=submission_db
-      - POSTGRES_USER=${SUBMISSION_DB_USER}
-      - POSTGRES_PASSWORD=${SUBMISSION_DB_PASS}
+    - POSTGRES_DB=identity_db
+    - POSTGRES_USER=${IDENTITY_DB_USER}
+    - POSTGRES_PASSWORD=${IDENTITY_DB_PASS}
     volumes:
       - postgres-submission-data:/var/lib/postgresql/data
     ports:
@@ -257,7 +257,7 @@ services:
     networks:
       - trabajo-grado-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U ${SUBMISSION_DB_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -279,7 +279,7 @@ services:
     networks:
       - trabajo-grado-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U ${NOTIFICATION_DB_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 5
