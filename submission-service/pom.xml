@@ -116,7 +116,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>package com.unicauca.comunicacionmicroservicios</mainClass>
+                    <mainClass>co.unicauca.comunicacionmicroservicios.ComunicacionMicroservicios</mainClass>
                 </configuration>
             </plugin>
         </plugins>

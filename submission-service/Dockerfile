@@ -5,17 +5,16 @@ FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 
-# Copiar archivos de configuración de Maven primero (para aprovechar cache de Docker)
+# Copiar archivos de configuración de Maven primero (para aprovechar cache)
 COPY pom.xml .
 
-# Descargar dependencias (se cachea si pom.xml no cambia)
-RUN mvn -B -DskipTests clean package
+# Descargar dependencias (sin compilar aún)
+RUN mvn dependency:go-offline -B
 
-# Copiar código fuente
+# Copiar el código fuente
 COPY src ./src
 
 # Compilar y empaquetar aplicación
-# Skip tests en build de Docker para acelerar; tests deben ejecutarse en CI/CD
 RUN mvn clean package -DskipTests
 
 # Etapa 2: Runtime

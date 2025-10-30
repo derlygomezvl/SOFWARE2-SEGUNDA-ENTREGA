@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # API Gateway - Punto de entrada único al sistema
   gateway:
