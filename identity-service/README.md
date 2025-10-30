@@ -198,7 +198,7 @@ El Microservicio de Identidad es responsable de:
     "success": true,
     "message": null,
     "data": {
-      "roles": ["ESTUDIANTE", "DOCENTE", "COORDINADOR", "JEFE_DEPARTAMENTO", "ADMIN"],
+      "roles": ["ESTUDIANTE", "DOCENTE", "ADMIN"],
       "programas": [
         "INGENIERIA_DE_SISTEMAS",
         "INGENIERIA_ELECTRONICA_Y_TELECOMUNICACIONES",
@@ -321,8 +321,6 @@ Content-Type: application/json
 ### Roles
 - `ESTUDIANTE`
 - `DOCENTE`
-- `COORDINADOR`
-- `JEFE_DEPARTAMENTO`
 - `ADMIN`
 
 **Importante**: Los valores deben escribirse exactamente como se muestran (en mayúsculas y con guiones bajos).

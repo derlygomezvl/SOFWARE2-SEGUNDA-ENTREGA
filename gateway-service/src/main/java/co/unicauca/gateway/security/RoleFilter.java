@@ -20,21 +20,22 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Filtro de autorización basada en roles para el sistema de gestión de trabajos de grado.
+ * Filtro opcional para autorización basada en roles a nivel de gateway.
  *
- * Roles del sistema:
- * - DOCENTE: Puede subir Formato A, anteproyectos y nueva versiones
- * - ESTUDIANTE: Puede consultar estado de su proyecto
- * - COORDINADOR: Puede evaluar Formato A
- * - JEFE_DEPARTAMENTO: Puede ver anteproyectos y asignar evaluadores
+ * Este filtro puede activarse/desactivarse mediante la propiedad:
+ * gateway.security.enforceRoleCheck=true/false
  *
- * IMPORTANTE: Este filtro es una capa adicional de seguridad a nivel de gateway.
- * Los microservicios DEBEN implementar su propia autorización de negocio.
+ * IMPORTANTE: Este filtro NO reemplaza la autorización de negocio en los microservicios.
+ * Es una capa adicional de seguridad para bloquear peticiones obviamente inválidas
+ * antes de que lleguen a los servicios backend.
  *
- * Activación: gateway.security.enforceRoleCheck=true/false
+ * Ejemplo de uso:
+ * - Bloquear acceso a /api/submission/formatoA si el rol no es DOCENTE
+ * - Bloquear acceso a endpoints administrativos si no es COORDINADOR
+ *
+ * Los requisitos de rol por endpoint se configuran en el mapa roleRequirements.
  *
  * @author Gateway Team
- * @version 2.0.0
  */
 @Component
 public class RoleFilter extends AbstractGatewayFilterFactory<RoleFilter.Config> {
@@ -44,73 +45,18 @@ public class RoleFilter extends AbstractGatewayFilterFactory<RoleFilter.Config> 
     @Value("${gateway.security.enforceRoleCheck:false}")
     private boolean enforceRoleCheck;
 
-    /**
-     * Definición de requisitos de rol por endpoint.
-     *
-     * Mapeo basado en los requisitos funcionales del sistema:
-     * - RF2: Docente sube Formato A
-     * - RF3: Coordinador evalúa Formato A
-     * - RF4: Docente sube nueva versión Formato A
-     * - RF5: Estudiante consulta estado de proyecto
-     * - RF6: Docente sube anteproyecto
-     * - RF7: Jefe de departamento lista anteproyectos
-     */
+    // Mapa de endpoints y roles requeridos
+    // Formato: path -> lista de roles permitidos
     private static final Map<String, List<String>> roleRequirements = new HashMap<>();
 
     static {
-        // ===== SUBMISSION SERVICE =====
+        // Definir requisitos de rol para endpoints específicos
+        roleRequirements.put("/api/submission/formatoA", List.of("DOCENTE"));
+        roleRequirements.put("/api/submission/anteproyecto", List.of("ESTUDIANTE", "DOCENTE"));
 
-        // RF2: Subir Formato A - Solo DOCENTE
-        roleRequirements.put("/api/submissions/formatoA", List.of("DOCENTE"));
-
-        // RF4: Subir nueva versión Formato A - Solo DOCENTE
-        roleRequirements.put("/api/submissions/formatoA/*/nueva-version", List.of("DOCENTE"));
-
-        // RF6: Subir anteproyecto - Solo DOCENTE
-        roleRequirements.put("/api/submissions/anteproyecto", List.of("DOCENTE"));
-
-        // RF7: Listar anteproyectos - JEFE_DEPARTAMENTO y COORDINADOR (por si necesita verlos)
-        roleRequirements.put("/api/submissions/anteproyectos", List.of("JEFE_DEPARTAMENTO", "COORDINADOR", "DOCENTE"));
-
-        // Cambiar estado de submission - Solo COORDINADOR o JEFE_DEPARTAMENTO
-        roleRequirements.put("/api/submissions/formatoA/*/estado", List.of("COORDINADOR"));
-        roleRequirements.put("/api/submissions/anteproyectos/*/estado", List.of("JEFE_DEPARTAMENTO"));
-
-
-        // ===== REVIEW SERVICE =====
-
-        // RF3: Ver Formato A pendientes de evaluación - Solo COORDINADOR
-        roleRequirements.put("/api/review/formatoA/pendientes", List.of("COORDINADOR"));
-
-        // RF3: Evaluar Formato A - Solo COORDINADOR
-        roleRequirements.put("/api/review/formatoA/*/evaluar", List.of("COORDINADOR"));
-
-        // RF7: Asignar evaluadores a anteproyecto - Solo JEFE_DEPARTAMENTO
-        roleRequirements.put("/api/review/anteproyectos/asignar", List.of("JEFE_DEPARTAMENTO"));
-
-        // Ver asignaciones - JEFE_DEPARTAMENTO y evaluadores asignados
-        roleRequirements.put("/api/review/anteproyectos/asignaciones", List.of("JEFE_DEPARTAMENTO", "DOCENTE"));
-
-        // Evaluar anteproyecto - Evaluadores asignados (DOCENTE)
-        roleRequirements.put("/api/review/anteproyectos/*/evaluar", List.of("DOCENTE", "JEFE_DEPARTAMENTO"));
-
-
-        // ===== PROGRESS TRACKING SERVICE =====
-
-        // RF5: Consultar estado de proyecto - ESTUDIANTE, DOCENTE, COORDINADOR
-        roleRequirements.put("/api/progress/proyectos/*/estado", List.of("ESTUDIANTE", "DOCENTE", "COORDINADOR", "JEFE_DEPARTAMENTO"));
-
-        // Consultar historial - Todos los roles autenticados
-        roleRequirements.put("/api/progress/proyectos/*/historial", List.of("ESTUDIANTE", "DOCENTE", "COORDINADOR", "JEFE_DEPARTAMENTO"));
-
-        // Crear evento - Solo servicios internos (normalmente no se expone directamente)
-        roleRequirements.put("/api/progress/eventos", List.of("COORDINADOR", "JEFE_DEPARTAMENTO"));
-
-
-        // ===== NOTIFICATION SERVICE =====
-
-        // Notificaciones - Todos los usuarios autenticados pueden consultar sus propias notificaciones
-        roleRequirements.put("/api/notifications/**", List.of("ESTUDIANTE", "DOCENTE", "COORDINADOR", "JEFE_DEPARTAMENTO"));
+        // Ejemplos adicionales (ajustar según necesidades del sistema)
+        // roleRequirements.put("/api/submission/aprobar", List.of("COORDINADOR", "JEFE_DEPARTAMENTO"));
+        // roleRequirements.put("/api/notification/broadcast", List.of("COORDINADOR"));
     }
 
     public RoleFilter() {
@@ -120,6 +66,7 @@ public class RoleFilter extends AbstractGatewayFilterFactory<RoleFilter.Config> 
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+            // Si la verificación de roles está desactivada, continuar sin validar
             if (!enforceRoleCheck) {
                 log.debug("Verificación de roles desactivada globalmente");
                 return chain.filter(exchange);
@@ -128,55 +75,54 @@ public class RoleFilter extends AbstractGatewayFilterFactory<RoleFilter.Config> 
             ServerHttpRequest request = exchange.getRequest();
             String path = request.getURI().getPath();
 
+            // Verificar si este endpoint tiene requisitos de rol
             List<String> requiredRoles = getRequiredRoles(path);
 
             if (requiredRoles == null || requiredRoles.isEmpty()) {
-                log.debug("No hay requisitos de rol específicos para: {}", path);
+                log.debug("No hay requisitos de rol para: {}", path);
                 return chain.filter(exchange);
             }
 
+            // Extraer el rol del header X-User-Role (añadido por JwtGatewayFilter)
             String userRole = request.getHeaders().getFirst("X-User-Role");
-            String userId = request.getHeaders().getFirst("X-User-Id");
 
             if (userRole == null || userRole.isEmpty()) {
-                log.warn("Header X-User-Role ausente para ruta protegida: {} | userId: {}", path, userId);
+                log.warn("Header X-User-Role ausente para ruta protegida: {}", path);
                 return forbiddenResponse(exchange, "Role information missing");
             }
 
+            // Verificar si el rol del usuario está en la lista de roles permitidos
             if (!requiredRoles.contains(userRole)) {
-                log.warn("Acceso denegado: usuario {} con rol {} intentó acceder a {} (roles requeridos: {})",
-                        userId, userRole, path, requiredRoles);
+                log.warn("Acceso denegado: usuario con rol {} intentó acceder a {} (roles requeridos: {})",
+                        userRole, path, requiredRoles);
                 return forbiddenResponse(exchange,
                         String.format("Access denied. Required roles: %s", String.join(", ", requiredRoles)));
             }
 
-            log.debug("Verificación de rol exitosa: userId={} con rol {} autorizado para {}",
-                    userId, userRole, path);
+            log.debug("Verificación de rol exitosa: rol {} autorizado para {}", userRole, path);
             return chain.filter(exchange);
         };
     }
 
     /**
      * Obtiene los roles requeridos para un path específico.
-     * Soporta wildcards (* y **) para paths dinámicos.
+     *
+     * Soporta matching exacto y con wildcards.
      */
     private List<String> getRequiredRoles(String path) {
-        // Match exacto
+        // Primero intentar match exacto
         if (roleRequirements.containsKey(path)) {
             return roleRequirements.get(path);
         }
 
-        // Match con wildcards
+        // Intentar match con prefijos (para paths dinámicos)
         for (Map.Entry<String, List<String>> entry : roleRequirements.entrySet()) {
             String pattern = entry.getKey();
 
-            if (pattern.contains("*")) {
-                String regex = pattern
-                        .replace("/**", "/.*")
-                        .replace("/*", "/[^/]+")
-                        .replace("*", "[^/]+");
-
-                if (path.matches(regex)) {
+            // Soportar wildcards al final: /api/submission/*
+            if (pattern.endsWith("/*") || pattern.endsWith("/**")) {
+                String prefix = pattern.substring(0, pattern.lastIndexOf('/'));
+                if (path.startsWith(prefix)) {
                     return entry.getValue();
                 }
             }
@@ -185,15 +131,17 @@ public class RoleFilter extends AbstractGatewayFilterFactory<RoleFilter.Config> 
         return null;
     }
 
+    /**
+     * Genera una respuesta 403 Forbidden con cuerpo JSON.
+     */
     private Mono<Void> forbiddenResponse(ServerWebExchange exchange, String message) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatus.FORBIDDEN);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         String jsonResponse = String.format(
-                "{\"error\":\"Forbidden\",\"message\":\"%s\",\"timestamp\":\"%s\"}",
-                message,
-                java.time.Instant.now().toString()
+                "{\"error\":\"Forbidden\",\"message\":\"%s\"}",
+                message
         );
 
         DataBuffer buffer = response.bufferFactory()
@@ -202,6 +150,9 @@ public class RoleFilter extends AbstractGatewayFilterFactory<RoleFilter.Config> 
         return response.writeWith(Mono.just(buffer));
     }
 
+    /**
+     * Clase de configuración para el filtro.
+     */
     public static class Config {
         // Configuración adicional si es necesaria
     }
