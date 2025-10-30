@@ -15,31 +15,25 @@ public class FormatoAView {
     private String cartaUrl;                  // si aplica
     private LocalDateTime fechaEnvio;
 
-    // getters/setters
+    // Getters
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
     public Long getProyectoId() { return proyectoId; }
-    public void setProyectoId(Long proyectoId) { this.proyectoId = proyectoId; }
-
     public Integer getVersion() { return version; }
-    public void setVersion(Integer version) { this.version = version; }
-
     public enumEstadoFormato getEstado() { return estado; }
-    public void setEstado(enumEstadoFormato estado) { this.estado = estado; }
-
     public String getObservaciones() { return observaciones; }
-    public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
-
     public String getNombreArchivo() { return nombreArchivo; }
-    public void setNombreArchivo(String nombreArchivo) { this.nombreArchivo = nombreArchivo; }
-
     public String getPdfUrl() { return pdfUrl; }
-    public void setPdfUrl(String pdfUrl) { this.pdfUrl = pdfUrl; }
-
     public String getCartaUrl() { return cartaUrl; }
-    public void setCartaUrl(String cartaUrl) { this.cartaUrl = cartaUrl; }
-
     public LocalDateTime getFechaEnvio() { return fechaEnvio; }
+
+    // Setters
+    public void setId(Long id) { this.id = id; }
+    public void setProyectoId(Long proyectoId) { this.proyectoId = proyectoId; }
+    public void setVersion(Integer version) { this.version = version; }
+    public void setEstado(enumEstadoFormato estado) { this.estado = estado; }
+    public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
+    public void setNombreArchivo(String nombreArchivo) { this.nombreArchivo = nombreArchivo; }
+    public void setPdfUrl(String pdfUrl) { this.pdfUrl = pdfUrl; }
+    public void setCartaUrl(String cartaUrl) { this.cartaUrl = cartaUrl; }
     public void setFechaEnvio(LocalDateTime fechaEnvio) { this.fechaEnvio = fechaEnvio; }
 }
