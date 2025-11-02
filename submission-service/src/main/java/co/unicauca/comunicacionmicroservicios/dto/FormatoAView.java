@@ -15,25 +15,31 @@ public class FormatoAView {
     private String cartaUrl;                  // si aplica
     private LocalDateTime fechaEnvio;
 
-    // Getters
+    // getters/setters
     public Long getId() { return id; }
-    public Long getProyectoId() { return proyectoId; }
-    public Integer getVersion() { return version; }
-    public enumEstadoFormato getEstado() { return estado; }
-    public String getObservaciones() { return observaciones; }
-    public String getNombreArchivo() { return nombreArchivo; }
-    public String getPdfUrl() { return pdfUrl; }
-    public String getCartaUrl() { return cartaUrl; }
-    public LocalDateTime getFechaEnvio() { return fechaEnvio; }
-
-    // Setters
     public void setId(Long id) { this.id = id; }
+
+    public Long getProyectoId() { return proyectoId; }
     public void setProyectoId(Long proyectoId) { this.proyectoId = proyectoId; }
+
+    public Integer getVersion() { return version; }
     public void setVersion(Integer version) { this.version = version; }
+
+    public enumEstadoFormato getEstado() { return estado; }
     public void setEstado(enumEstadoFormato estado) { this.estado = estado; }
+
+    public String getObservaciones() { return observaciones; }
     public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
+
+    public String getNombreArchivo() { return nombreArchivo; }
     public void setNombreArchivo(String nombreArchivo) { this.nombreArchivo = nombreArchivo; }
+
+    public String getPdfUrl() { return pdfUrl; }
     public void setPdfUrl(String pdfUrl) { this.pdfUrl = pdfUrl; }
+
+    public String getCartaUrl() { return cartaUrl; }
     public void setCartaUrl(String cartaUrl) { this.cartaUrl = cartaUrl; }
+
+    public LocalDateTime getFechaEnvio() { return fechaEnvio; }
     public void setFechaEnvio(LocalDateTime fechaEnvio) { this.fechaEnvio = fechaEnvio; }
 }
