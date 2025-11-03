@@ -2,7 +2,7 @@ package co.unicauca.comunicacionmicroservicios.service;
 
 import co.unicauca.comunicacionmicroservicios.domain.model.ProyectoGrado;
 import co.unicauca.comunicacionmicroservicios.domain.state.ProjectStateFactory;
-import co.unicauca.comunicacionmicroservicios.infrastructure.repository.IProyectoGradoRepository;
+import co.unicauca.comunicacionmicroservicios.infraestructure.repository.IProyectoGradoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
