@@ -9,7 +9,6 @@ package co.unicauca.comunicacionmicroservicios.domain.model;
  * @author USUARIO
  */
 
-import co.unicauca.comunicacionmicroservicios.domain.model.state.*;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,7 +40,7 @@ public class ProyectoGrado {
     private Integer estudiante2Id;
 
     @Enumerated(EnumType.STRING)
-    private enumEstadoProyecto estado = enumEstadoProyecto.EN_DESARROLLO;
+    private enumEstadoProyecto estado = enumEstadoProyecto.EN_PROCESO;
 
     private Integer numeroIntentos = 1;
 
@@ -50,10 +49,24 @@ public class ProyectoGrado {
     private List<FormatoA> formatos;
 
     public boolean puedeSubirNuevaVersion() {
-        return estado == enumEstadoProyecto.RECHAZADO_POR_COMITE && numeroIntentos < 3;
+        return estado == enumEstadoProyecto.RECHAZADO && numeroIntentos < 3;
     }
-    public void marcarComoRechazadoDefinitivo() { this.estado = enumEstadoProyecto.RECHAZADO_DEFINITIVO; }
-    public void incrementarIntentos() { this.numeroIntentos = this.numeroIntentos + 1; }
+
+    public void marcarComoRechazadoDefinitivo() {
+        this.estado = enumEstadoProyecto.RECHAZADO_DEFINITIVO;
+    }
+
+    public void incrementarIntentos() {
+        this.numeroIntentos = this.numeroIntentos + 1;
+    }
+
+    public void marcarAprobado() {
+        this.estado = enumEstadoProyecto.APROBADO;
+    }
+
+    public void marcarRechazado() {
+        this.estado = enumEstadoProyecto.RECHAZADO;
+    }
 
     public Integer getId() {
         return id;
@@ -159,17 +172,5 @@ public class ProyectoGrado {
         this.formatos = formatos;
     }
 
-    public IEstadoProyecto obtenerEstadoActual() {
-        return switch (this.estado) {
-            case FORMATO_A_DILIGENCIADO -> new EstadoFormatoADiligenciado();
-            case CORRECCIONES_COMITE -> new EstadoCorreccionesComite();
-            case ACEPTADO_POR_COMITE -> new EstadoAceptadoPorComite();
-            case RECHAZADO_POR_COMITE, RECHAZADO_DEFINITIVO -> new EstadoRechazadoPorComite();
-            case ESCRIBIENDO_ANTEPROYECTO -> new EstadoEscribiendoAnteproyecto();
-            case PRESENTADO_JEFATURA -> new EstadoPresentadoJefatura();
-            default -> throw new IllegalStateException("Estado no soportado: " + this.estado);
-        };
-    }
-
+    
 }
-
