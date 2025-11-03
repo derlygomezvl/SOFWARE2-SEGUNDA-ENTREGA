@@ -316,6 +316,57 @@ public class NotificationPublisher {
                 .build();
         publicarNotificacion(notificacion);
     }
+    public void notificarAprobacionAnteproyecto(ProyectoGrado proyecto) {
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .type(NotificationType.ANTEPROYECTO_APROBADO)
+                .subject("Anteproyecto Aprobado")
+                .message("Su anteproyecto para el proyecto '" + proyecto.getTitulo() + "' ha sido aprobado. Puede continuar con el desarrollo.")
+                .recipient(Recipient.builder()
+                        .userId("docente_id")
+                        .email("docente@unicauca.edu.co")
+                        .build())
+                .build();
+        publicarNotificacion(notificacion);
+    }
+
+    public void notificarRechazoAnteproyecto(ProyectoGrado proyecto, String observaciones) {
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .type(NotificationType.ANTEPROYECTO_RECHAZADO)
+                .subject("Anteproyecto Rechazado")
+                .message("Su anteproyecto para el proyecto '" + proyecto.getTitulo() + "' ha sido rechazado. Observaciones: " + observaciones)
+                .recipient(Recipient.builder()
+                        .userId("docente_id")
+                        .email("docente@unicauca.edu.co")
+                        .build())
+                .build();
+        publicarNotificacion(notificacion);
+    }
+
+    public void notificarReenvioAnteproyecto(ProyectoGrado proyecto) {
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .type(NotificationType.ANTEPROYECTO_REENVIADO)
+                .subject("Anteproyecto Reenviado")
+                .message("El anteproyecto para el proyecto '" + proyecto.getTitulo() + "' ha sido reenviado para evaluación.")
+                .recipient(Recipient.builder()
+                        .userId("jefe_departamento_id")
+                        .email("jefe.departamento@unicauca.edu.co")
+                        .build())
+                .build();
+        publicarNotificacion(notificacion);
+    }
+
+    public void notificarAsignacionEvaluadores(ProyectoGrado proyecto) {
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .type(NotificationType.EVALUADORES_ASIGNADOS)
+                .subject("Evaluadores Asignados")
+                .message("Se han asignado evaluadores para el anteproyecto del proyecto: " + proyecto.getTitulo())
+                .recipient(Recipient.builder()
+                        .userId("docente_id")
+                        .email("docente@unicauca.edu.co")
+                        .build())
+                .build();
+        publicarNotificacion(notificacion);
+    }
 
     /**
      * Método privado para publicar notificaciones con correlation ID.
