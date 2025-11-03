@@ -6,7 +6,7 @@ spring:
     name: submission-service
 
   datasource:
-    url: jdbc:postgresql://${DATABASE_HOST:submission-postgres}:${DATABASE_PORT:5432}/${DATABASE_NAME:submissiondb}
+    url: jdbc:postgresql://${DATABASE_HOST:postgres-submission}:${DATABASE_PORT:5432}/${DATABASE_NAME:submissiondb}
     username: ${DATABASE_USERNAME:submission_user}
     password: ${DATABASE_PASSWORD:submission_pass}
     driver-class-name: org.postgresql.Driver

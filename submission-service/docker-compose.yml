@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   # Base de datos PostgreSQL para submission service
-  submission-postgres:
+  postgres-submission:
     image: postgres:15-alpine
-    container_name: submission-postgres
+    container_name: postgres-submission
     restart: unless-stopped
     environment:
       POSTGRES_DB: submissiondb
@@ -55,7 +53,7 @@ services:
       - "8082:8082"
     environment:
       # Database
-      DATABASE_HOST: submission-postgres
+      DATABASE_HOST: postgres-submission
       DATABASE_PORT: 5432
       DATABASE_NAME: submissiondb
       DATABASE_USERNAME: submission_user
@@ -75,7 +73,7 @@ services:
     volumes:
       - submission-uploads:/app/uploads
     depends_on:
-      submission-postgres:
+      postgres-submission:
         condition: service_healthy
       rabbitmq-local:
         condition: service_healthy

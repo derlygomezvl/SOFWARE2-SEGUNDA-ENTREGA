@@ -3,10 +3,18 @@ package co.unicauca.comunicacionmicroservicios.domain.model;
 import co.unicauca.comunicacionmicroservicios.domain.enums.ProjectStateEnum;
 import co.unicauca.comunicacionmicroservicios.domain.state.ProjectState;
 import co.unicauca.comunicacionmicroservicios.domain.state.ProjectStateFactory;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 import java.time.LocalDateTime;
 
+
+@Entity
 public class ProyectoGrado {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
     private String titulo;
     private ProjectStateEnum estado;
@@ -26,6 +34,10 @@ public class ProyectoGrado {
         this.intentosFormatoA = 1;
         this.fechaCreacion = LocalDateTime.now();
         this.fechaActualizacion = LocalDateTime.now();
+    }
+
+    public ProyectoGrado() {
+
     }
 
     // Constructor para cargar desde base de datos

@@ -1,10 +1,10 @@
 package co.unicauca.comunicacionmicroservicios.service;
 
 import co.unicauca.comunicacionmicroservicios.config.RabbitConfig;
+import co.unicauca.comunicacionmicroservicios.domain.model.ProyectoGrado;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationRequest;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationType;
 import co.unicauca.comunicacionmicroservicios.dto.Recipient;
-import co.unicauca.comunicacionmicroservicios.domain.model.ProyectoGrado;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -13,7 +13,6 @@ import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -233,9 +232,9 @@ public class NotificationPublisher {
 
         try {
             rabbitTemplate.convertAndSend(RabbitConfig.NOTIFICATIONS_QUEUE, request, processor);
-            log.info("✅ Notificación publicada: {} - CorrelationId: {}", eventDescription, finalCorrelationId);
+            log.info(" Notificación publicada: {} - CorrelationId: {}", eventDescription, finalCorrelationId);
         } catch (AmqpException e) {
-            log.error("❌ Error al enviar notificación: {} - CorrelationId: {}", eventDescription, finalCorrelationId, e);
+            log.error("Error al enviar notificación: {} - CorrelationId: {}", eventDescription, finalCorrelationId, e);
             throw e;
         }
     }
