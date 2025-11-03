@@ -276,12 +276,12 @@ public class NotificationPublisher {
                     processor
             );
 
-            log.info("✉️ Notificación publicada a RabbitMQ correctamente - Evento: {}, Cola: {}, CorrelationId: {}, Destinatarios: {}",
+            log.info(" Notificación publicada a RabbitMQ correctamente - Evento: {}, Cola: {}, CorrelationId: {}, Destinatarios: {}",
                     eventDescription, RabbitConfig.NOTIFICATIONS_QUEUE, finalCorrelationId,
                     request.recipients().size());
 
         } catch (AmqpException e) {
-            log.error("❌ Error al enviar mensaje a RabbitMQ - Evento: {}, CorrelationId: {}",
+            log.error("Error al enviar mensaje a RabbitMQ - Evento: {}, CorrelationId: {}",
                     eventDescription, finalCorrelationId, e);
             throw e; // Re-lanzar para que el catch del método padre lo maneje
         }
