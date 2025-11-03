@@ -4,6 +4,7 @@ import co.unicauca.comunicacionmicroservicios.config.RabbitConfig;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationRequest;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationType;
 import co.unicauca.comunicacionmicroservicios.dto.Recipient;
+import co.unicauca.comunicacionmicroservicios.domain.model.ProyectoGrado;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -249,6 +250,71 @@ public class NotificationPublisher {
             log.error("Error al publicar notificación de rechazo definitivo - Proyecto: {}",
                     proyectoId, e);
         }
+    }
+
+    public void notificarAprobacionFormatoA(ProyectoGrado proyecto) {
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .type(NotificationType.FORMATO_A_APROBADO)
+                .subject("Formato A Aprobado")
+                .message("Su Formato A para el proyecto '" + proyecto.getTitulo() + "' ha sido aprobado. Ya puede subir el anteproyecto.")
+                .recipient(Recipient.builder()
+                        .userId("docente_id") // Esto debería venir del proyecto
+                        .email("docente@unicauca.edu.co")
+                        .build())
+                .build();
+        publicarNotificacion(notificacion);
+    }
+
+    public void notificarRechazoFormatoA(ProyectoGrado proyecto, String observaciones) {
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .type(NotificationType.FORMATO_A_RECHAZADO)
+                .subject("Formato A Requiere Correcciones")
+                .message("Su Formato A para el proyecto '" + proyecto.getTitulo() + "' ha sido rechazado. Observaciones: " + observaciones)
+                .recipient(Recipient.builder()
+                        .userId("docente_id")
+                        .email("docente@unicauca.edu.co")
+                        .build())
+                .build();
+        publicarNotificacion(notificacion);
+    }
+
+    public void notificarCorreccionesFormatoA(ProyectoGrado proyecto, String observaciones) {
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .type(NotificationType.FORMATO_A_CORRECCIONES)
+                .subject("Formato A Requiere Correcciones")
+                .message("Su Formato A para el proyecto '" + proyecto.getTitulo() + "' requiere correcciones. Observaciones: " + observaciones)
+                .recipient(Recipient.builder()
+                        .userId("docente_id")
+                        .email("docente@unicauca.edu.co")
+                        .build())
+                .build();
+        publicarNotificacion(notificacion);
+    }
+
+    public void notificarReenvioFormatoA(ProyectoGrado proyecto) {
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .type(NotificationType.FORMATO_A_REENVIADO)
+                .subject("Formato A Reenviado")
+                .message("El Formato A para el proyecto '" + proyecto.getTitulo() + "' ha sido reenviado para evaluación.")
+                .recipient(Recipient.builder()
+                        .userId("coordinador_id")
+                        .email("coordinador@unicauca.edu.co")
+                        .build())
+                .build();
+        publicarNotificacion(notificacion);
+    }
+
+    public void notificarAnteproyectoPresentado(ProyectoGrado proyecto) {
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .type(NotificationType.ANTEPROYECTO_PRESENTADO)
+                .subject("Nuevo Anteproyecto Presentado")
+                .message("Se ha presentado un nuevo anteproyecto para el proyecto: " + proyecto.getTitulo())
+                .recipient(Recipient.builder()
+                        .userId("jefe_departamento_id")
+                        .email("jefe.departamento@unicauca.edu.co")
+                        .build())
+                .build();
+        publicarNotificacion(notificacion);
     }
 
     /**
