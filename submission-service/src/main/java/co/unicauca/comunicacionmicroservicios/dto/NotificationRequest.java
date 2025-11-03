@@ -4,14 +4,16 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * Request para envío de notificaciones asíncronas a través de RabbitMQ.
- * Este DTO debe coincidir con el NotificationRequest del notification-service.
+ * DTO para el envío de notificaciones asíncronas a través de RabbitMQ.
+ * Debe coincidir con la estructura utilizada en el notification-service.
  */
+@Builder
 public record NotificationRequest(
         @NotNull(message = "Notification type is required")
         NotificationType notificationType,
@@ -24,23 +26,18 @@ public record NotificationRequest(
         List<Recipient> recipients,
 
         /**
-         * Contexto de negocio con información variable según el tipo de notificación.
-         * Ejemplos:
-         * - projectTitle: Título del proyecto
-         * - documentType: "FORMATO_A" | "ANTEPROYECTO"
-         * - documentVersion: Número de versión
-         * - submittedBy: Nombre del que envió
-         * - submissionDate: Fecha de envío
+         * Contexto del mensaje (variables dinámicas según el tipo de notificación)
          */
         @NotNull(message = "Business context is required")
         Map<String, Object> businessContext,
 
-        String message,      // Mensaje custom opcional
-        String templateId,   // ID de plantilla
-        boolean forceFail    // Para testing
+        String subject,     // ✅ Asunto del mensaje (nuevo campo)
+        String message,     // Mensaje personalizado opcional
+        String templateId,  // ID de plantilla (opcional)
+        boolean forceFail   // Para pruebas o simulaciones
 ) {
     /**
-     * Constructor convenience para notificaciones simples
+     * Constructor auxiliar para notificaciones simples.
      */
     public NotificationRequest(
             NotificationType notificationType,
@@ -51,12 +48,12 @@ public record NotificationRequest(
         this(
                 notificationType,
                 channel,
-                List.of(new Recipient(recipientEmail)),
+                List.of(new Recipient(recipientEmail, null, null)),
                 businessContext,
-                null,
-                null,
+                null, // subject
+                null, // message
+                null, // templateId
                 false
         );
     }
 }
-

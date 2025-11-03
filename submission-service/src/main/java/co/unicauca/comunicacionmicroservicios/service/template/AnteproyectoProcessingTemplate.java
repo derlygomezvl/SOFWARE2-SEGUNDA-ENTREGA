@@ -8,6 +8,9 @@ import co.unicauca.comunicacionmicroservicios.dto.Recipient;
 import co.unicauca.comunicacionmicroservicios.service.NotificationPublisher;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Implementación concreta del Template Method para procesar Anteproyecto
  */
@@ -105,14 +108,16 @@ public class AnteproyectoProcessingTemplate extends DocumentProcessingTemplate {
         );
 
         return NotificationRequest.builder()
-                .type(NotificationType.ANTEPROYECTO_PRESENTADO)
+                .notificationType(NotificationType.ANTEPROYECTO_PRESENTADO)
                 .subject("Nuevo Anteproyecto Presentado - " + proyecto.getTitulo())
                 .message(mensaje)
-                .recipient(Recipient.builder()
-                        .userId("jefe_departamento_id")
+                .recipients(List.of(Recipient.builder()
                         .email("jefe.departamento@unicauca.edu.co")
-                        .build())
-                .metadata(Map.of(
+                        .role("Jefe")
+                        .name("Jefe")
+                        .build()
+                ))
+                .businessContext(Map.of(
                         "proyectoId", proyecto.getId(),
                         "proyectoTitulo", proyecto.getTitulo(),
                         "docenteId", documentData.getUsuarioId(),

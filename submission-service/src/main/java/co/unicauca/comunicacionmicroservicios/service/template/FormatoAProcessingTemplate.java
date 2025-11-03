@@ -6,6 +6,8 @@ import co.unicauca.comunicacionmicroservicios.dto.NotificationRequest;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationType;
 import co.unicauca.comunicacionmicroservicios.dto.Recipient;
 import co.unicauca.comunicacionmicroservicios.service.NotificationPublisher;
+import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /**
@@ -113,20 +115,24 @@ public class FormatoAProcessingTemplate extends DocumentProcessingTemplate {
         );
 
         return NotificationRequest.builder()
-                .type(NotificationType.FORMATO_A_PRESENTADO)
+                .notificationType(NotificationType.FORMATO_A_PRESENTADO)
                 .subject("Nuevo Formato A Presentado - " + proyecto.getTitulo())
                 .message(mensaje)
-                .recipient(Recipient.builder()
-                        .userId("coordinador_id") // En producción, obtener del sistema
-                        .email("coordinador@unicauca.edu.co")
-                        .build())
-                .metadata(Map.of(
+                .recipients(List.of(
+                        Recipient.builder()
+                                .email("coordinador@unicauca.edu.co")
+                                .role("COORDINATOR") // opcional: ajusta el role si lo necesitas
+                                .name("Coordinador") // opcional
+                                .build()
+                ))
+                .businessContext(Map.of(
                         "proyectoId", proyecto.getId(),
                         "proyectoTitulo", proyecto.getTitulo(),
                         "docenteId", documentData.getUsuarioId(),
                         "modalidad", documentData.getModalidad(),
                         "intento", proyecto.getIntentosFormatoA()
                 ))
+                .channel("email") // asegúrate de definir el channel si tu builder lo requiere
                 .build();
     }
 

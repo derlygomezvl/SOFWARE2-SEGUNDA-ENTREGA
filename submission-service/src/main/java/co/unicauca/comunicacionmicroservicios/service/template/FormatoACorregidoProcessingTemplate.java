@@ -8,6 +8,9 @@ import co.unicauca.comunicacionmicroservicios.dto.Recipient;
 import co.unicauca.comunicacionmicroservicios.service.NotificationPublisher;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Implementación concreta para reenvío de Formato A con correcciones
  */
@@ -101,14 +104,13 @@ public class FormatoACorregidoProcessingTemplate extends DocumentProcessingTempl
         );
 
         return NotificationRequest.builder()
-                .type(NotificationType.FORMATO_A_REENVIADO)
+                .notificationType(NotificationType.FORMATO_A_REENVIADO)
                 .subject("Formato A Corregido Reenviado - " + proyecto.getTitulo())
                 .message(mensaje)
-                .recipient(Recipient.builder()
-                        .userId("coordinador_id")
+                .recipients(List.of(Recipient.builder()
                         .email("coordinador@unicauca.edu.co")
-                        .build())
-                .metadata(Map.of(
+                        .build()))
+                .businessContext(Map.of(
                         "proyectoId", proyecto.getId(),
                         "proyectoTitulo", proyecto.getTitulo(),
                         "docenteId", documentData.getUsuarioId(),

@@ -2,11 +2,13 @@ package co.unicauca.comunicacionmicroservicios.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
 /**
  * Representa un destinatario de notificación con su rol en el sistema.
  * DEBE coincidir con el record Recipient del notification-service.
  */
+@Builder
 public record Recipient(
         @NotBlank(message = "Email is required")
         @Email(message = "Invalid email format")

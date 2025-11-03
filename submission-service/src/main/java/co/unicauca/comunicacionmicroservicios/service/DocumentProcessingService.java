@@ -2,7 +2,7 @@ package co.unicauca.comunicacionmicroservicios.service;
 
 import co.unicauca.comunicacionmicroservicios.domain.model.ProyectoGrado;
 import co.unicauca.comunicacionmicroservicios.service.template.*;
-import co.unicauca.comunicacionmicroservicios.infrastructure.repository.IProyectoGradoRepository;
+import co.unicauca.comunicacionmicroservicios.infraestructure.repository.IProyectoGradoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -31,25 +31,39 @@ public class DocumentProcessingService {
     }
 
     public ProcessResult procesarDocumento(String proyectoId, DocumentData documentData) {
-        // Obtener el proyecto
-        ProyectoGrado proyecto = proyectoRepository.findById(proyectoId)
-                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado: " + proyectoId));
+        try {
+            // Convertir String a Integer
+            Integer id = Integer.parseInt(proyectoId);
 
-        // Obtener el procesador adecuado
-        DocumentProcessingTemplate processor = processors.get(documentData.getTipo());
-        if (processor == null) {
-            throw new IllegalArgumentException("Tipo de documento no soportado: " + documentData.getTipo());
+            // Obtener el proyecto
+            ProyectoGrado proyecto = proyectoRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Proyecto no encontrado: " + proyectoId));
+
+            // Obtener el procesador adecuado
+            DocumentProcessingTemplate processor = processors.get(documentData.getTipo());
+            if (processor == null) {
+                throw new IllegalArgumentException("Tipo de documento no soportado: " + documentData.getTipo());
+            }
+
+            // Ejecutar el procesamiento usando el Template Method
+            ProcessResult result = processor.procesarDocumento(proyecto, documentData);
+
+            // Guardar cambios en el proyecto
+            if (result.isSuccess()) {
+                proyectoRepository.save(proyecto);
+            }
+
+            return result;
+
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID de proyecto inválido: " + proyectoId + ". Debe ser un número válido.");
+        } catch (RuntimeException e) {
+            // Relanzar excepciones de negocio sin modificarlas
+            throw e;
+        } catch (Exception e) {
+            // Capturar cualquier otra excepción y lanzar una más específica
+            throw new RuntimeException("Error durante el procesamiento del documento: " + e.getMessage(), e);
         }
-
-        // Ejecutar el procesamiento usando el Template Method
-        ProcessResult result = processor.procesarDocumento(proyecto, documentData);
-
-        // Guardar cambios en el proyecto
-        if (result.isSuccess()) {
-            proyectoRepository.save(proyecto);
-        }
-
-        return result;
     }
 
     public boolean isTipoDocumentoSoportado(String tipoDocumento) {

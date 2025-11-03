@@ -2,7 +2,7 @@ package co.unicauca.comunicacionmicroservicios.service;
 
 import co.unicauca.comunicacionmicroservicios.domain.model.ProyectoGrado;
 import co.unicauca.comunicacionmicroservicios.domain.state.ProjectStateFactory;
-import co.unicauca.comunicacionmicroservicios.infrastructure.repository.IProyectoGradoRepository;
+import co.unicauca.comunicacionmicroservicios.infraestructure.repository.IProyectoGradoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,12 +18,20 @@ public class ProjectStateService {
     }
 
     public ProyectoGrado obtenerProyectoConEstado(String proyectoId) {
-        ProyectoGrado proyecto = proyectoRepository.findById(proyectoId)
-                .orElseThrow(() -> new RuntimeException("Proyecto no encontrado: " + proyectoId));
+        try {
+            // Convertir String a Integer
+            Integer id = Integer.parseInt(proyectoId);
 
-        // Inicializar el estado del proyecto
-        proyecto.initializeState(stateFactory);
-        return proyecto;
+            ProyectoGrado proyecto = proyectoRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Proyecto no encontrado: " + proyectoId));
+
+            // Inicializar el estado del proyecto
+            proyecto.initializeState(stateFactory);
+            return proyecto;
+
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("ID de proyecto inválido: " + proyectoId + ". Debe ser un número válido.");
+        }
     }
 
     public void manejarFormatoA(String proyectoId, String contenido) {

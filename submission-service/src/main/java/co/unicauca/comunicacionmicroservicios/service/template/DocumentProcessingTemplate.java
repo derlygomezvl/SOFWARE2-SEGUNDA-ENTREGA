@@ -111,7 +111,8 @@ public abstract class DocumentProcessingTemplate {
      */
     private void notificarInteresados(ProyectoGrado proyecto, DocumentData documentData) {
         NotificationRequest notificacion = construirNotificacion(proyecto, documentData);
-        notificationPublisher.publicarNotificacion(notificacion);
+        notificationPublisher.publishNotification(notificacion, "Evento de procesamiento de documento");
+
     }
 
     /**

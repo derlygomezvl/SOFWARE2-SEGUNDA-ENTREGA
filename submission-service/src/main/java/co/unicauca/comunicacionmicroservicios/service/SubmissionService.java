@@ -1,6 +1,7 @@
 package co.unicauca.comunicacionmicroservicios.service;
 
 import co.unicauca.comunicacionmicroservicios.domain.model.*;
+import co.unicauca.comunicacionmicroservicios.domain.state.ProjectStateFactory;
 import co.unicauca.comunicacionmicroservicios.dto.*;
 import co.unicauca.comunicacionmicroservicios.infraestructure.repository.*;
 import org.slf4j.Logger;
@@ -18,6 +19,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio de submission adaptado al dominio rico (ProjectState / ProyectoGrado).
+ *
+ * Notas:
+ * - Asume que ProyectoGrado se construye con (titulo, ProjectStateFactory).
+ * - No intenta escribir campos inexistentes en ProyectoGrado; esos metadatos se guardan en FormatoA/Anteproyecto.
+ */
 @Service
 public class SubmissionService implements ISubmissionService {
 
@@ -26,24 +34,25 @@ public class SubmissionService implements ISubmissionService {
     private final IProyectoGradoRepository proyectoRepo;
     private final IFormatoARepository formatoRepo;
     private final IAnteproyectoRepository anteproyectoRepo;
-
     private final NotificationPublisher notificationPublisher;
     private final IdentityClient identityClient;
+    private final ProjectStateFactory stateFactory;
 
     @Value("${file.storage.path:/app/uploads}")
     private String storageBasePath;
 
-    // Constructor explícito en lugar de @RequiredArgsConstructor
     public SubmissionService(IProyectoGradoRepository proyectoRepo,
-                            IFormatoARepository formatoRepo,
-                            IAnteproyectoRepository anteproyectoRepo,
-                            NotificationPublisher notificationPublisher,
-                            IdentityClient identityClient) {
+                             IFormatoARepository formatoRepo,
+                             IAnteproyectoRepository anteproyectoRepo,
+                             NotificationPublisher notificationPublisher,
+                             IdentityClient identityClient,
+                             ProjectStateFactory stateFactory) {
         this.proyectoRepo = proyectoRepo;
         this.formatoRepo = formatoRepo;
         this.anteproyectoRepo = anteproyectoRepo;
         this.notificationPublisher = notificationPublisher;
         this.identityClient = identityClient;
+        this.stateFactory = stateFactory;
     }
 
     // ---------------------------
@@ -55,59 +64,76 @@ public class SubmissionService implements ISubmissionService {
         validarArchivoPdfObligatorio(pdf);
         validarCartaSiPractica(data, carta);
 
-        // Crear proyecto
-        ProyectoGrado proyecto = new ProyectoGrado();
-        proyecto.setTitulo(data.getTitulo());
-        proyecto.setModalidad(data.getModalidad());
-        proyecto.setDirectorId(data.getDirectorId());
-        proyecto.setCodirectorId(data.getCodirectorId());
-        proyecto.setObjetivoGeneral(data.getObjetivoGeneral());
-        // Convertimos la lista a un texto (uno por línea)
-        proyecto.setObjetivosEspecificos(String.join("\n",
-                data.getObjetivosEspecificos() != null ? data.getObjetivosEspecificos() : List.of()));
-        proyecto.setEstudiante1Id(data.getEstudiante1Id());
-        proyecto.setEstudiante2Id(data.getEstudiante2Id());
-        proyecto.setNumeroIntentos(1); // v1
-        // Estado inicial: mantenemos el que tengas por defecto (EN_PROCESO); si tienes EN_EVALUACION_1, cámbialo aquí.
+        // 1) Crear el agregado raíz ProyectoGrado usando ProjectStateFactory
+        ProyectoGrado proyecto = new ProyectoGrado(data.getTitulo(), stateFactory);
 
+        // Persistir proyecto (el repositorio debe asignar id)
         proyecto = proyectoRepo.save(proyecto);
 
-        // Guardar archivos
+        // 2) Guardar archivos en almacenamiento
         String base = "formato-a/" + proyecto.getId() + "/v1";
         String pdfPath = guardarArchivo(base, "documento.pdf", pdf);
         String cartaPath = (data.getModalidad() == enumModalidad.PRACTICA_PROFESIONAL)
                 ? guardarArchivo(base, "carta.pdf", carta)
                 : null;
 
-        // Crear versión Formato A v1
+        // 3) Crear entidad FormatoA con metadatos (directorId, modalidad, etc.)
         FormatoA v1 = new FormatoA();
         v1.setProyecto(proyecto);
         v1.setNumeroIntento(1);
         v1.setRutaArchivo(pdfPath);
-        v1.setNombreArchivo(pdf.getOriginalFilename() != null ? pdf.getOriginalFilename() : "documento.pdf");
+        v1.setNombreArchivo(Optional.ofNullable(pdf.getOriginalFilename()).orElse("documento.pdf"));
         v1.setFechaCarga(LocalDateTime.now());
         if (cartaPath != null) {
             v1.setRutaCartaAceptacion(cartaPath);
-            v1.setNombreCartaAceptacion(carta != null ? carta.getOriginalFilename() : "carta.pdf");
+            v1.setNombreCartaAceptacion(Optional.ofNullable(carta.getOriginalFilename()).orElse("carta.pdf"));
         }
         v1.setEstado(enumEstadoFormato.PENDIENTE);
+
+        // Guardar formato
         formatoRepo.save(v1);
 
-        // RF2: Enviar notificación asíncrona al coordinador
+        // 4) Informar al agregado (delegar comportamiento al state si aplica)
+        proyecto.manejarFormatoA("Formato A v1 creado"); // la lógica de estado quedará en el dominio
+        proyecto = proyectoRepo.save(proyecto); // persistir cambios de estado si los hay
+
+        // 5) Notificar al coordinador (obtenemos datos desde IdentityClient)
         String coordinadorEmail = identityClient.getCoordinadorEmail();
         String submittedByName = identityClient.getUserName(userId);
+        Integer proyectoIdInt;
+        try {
+            proyectoIdInt = Integer.parseInt(proyecto.getId());
+        } catch (NumberFormatException e) {
+            proyectoIdInt = null;
+        }
 
-        notificationPublisher.notificarFormatoAEnviado(
-                proyecto.getId(),
-                proyecto.getTitulo(),
-                1, // versión 1
-                submittedByName,
-                coordinadorEmail
-        );
+// Usar publishNotification directamente en lugar del método que no existe
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .notificationType(NotificationType.FORMATO_A_REENVIADO) // o crea un nuevo tipo si necesitas
+                .subject("Nuevo Formato A Presentado")
+                .message("Se ha presentado un nuevo Formato A v1 para el proyecto: " + proyecto.getTitulo() +
+                        " por: " + submittedByName)
+                .recipients(List.of(
+                        Recipient.builder()
+                                .email(coordinadorEmail)
+                                .role("COORDINATOR")
+                                .build()
+                ))
+                .businessContext(Map.of(
+                        "projectId", proyectoIdInt,
+                        "version", 1,
+                        "submittedBy", submittedByName,
+                        "projectTitle", proyecto.getTitulo()
+                ))
+                .channel("email")
+                .build();
+
+        notificationPublisher.publishNotification(notificacion, "Formato A enviado v1");
 
         log.info("Formato A v1 creado para proyecto {} - Notificación enviada al coordinador: {}",
                 proyecto.getId(), coordinadorEmail);
-        return new IdResponse(proyecto.getId().longValue());
+
+        return new IdResponse(parseLongSafeStringId(proyecto.getId()));
     }
 
     // ---------------------------
@@ -121,7 +147,7 @@ public class SubmissionService implements ISubmissionService {
 
         FormatoAView view = new FormatoAView();
         view.setId(fa.getId().longValue());
-        view.setProyectoId(fa.getProyecto().getId().longValue());
+        view.setProyectoId(fa.getProyecto() != null ? safeParseLong(fa.getProyecto().getId()) : null);
         view.setVersion(fa.getNumeroIntento());
         view.setEstado(fa.getEstado());
         view.setObservaciones(fa.getObservaciones());
@@ -135,16 +161,23 @@ public class SubmissionService implements ISubmissionService {
     @Override
     @Transactional(readOnly = true)
     public FormatoAPage listarFormatoA(Optional<String> docenteId, int page, int size) {
-        // Implementación simple (sin Pageable real para no complicar):
         List<FormatoAView> content = formatoRepo.findAll().stream()
-                .filter(fa -> docenteId.isEmpty() ||
-                        Objects.equals(fa.getProyecto().getDirectorId(), parseIntSafe(docenteId.get())))
+                .filter(fa -> {
+                    if (docenteId.isEmpty()) return true;
+                    // Si FormatoA guarda directorId como Integer, comparamos con seguridad
+                    try {
+                        Integer dirId = Integer.parseInt(docenteId.get());
+                        return Objects.equals(fa.getProyecto(), dirId);
+                    } catch (Exception ex) {
+                        return false;
+                    }
+                })
                 .sorted(Comparator.comparing(FormatoA::getFechaCarga).reversed())
                 .limit(size)
                 .map(fa -> {
                     FormatoAView v = new FormatoAView();
                     v.setId(fa.getId().longValue());
-                    v.setProyectoId(fa.getProyecto().getId().longValue());
+                    v.setProyectoId(fa.getProyecto() != null ? safeParseLong(fa.getProyecto().getId()) : null);
                     v.setVersion(fa.getNumeroIntento());
                     v.setEstado(fa.getEstado());
                     v.setNombreArchivo(fa.getNombreArchivo());
@@ -170,32 +203,33 @@ public class SubmissionService implements ISubmissionService {
     public IdResponse reenviarFormatoA(String userId, Long proyectoId, MultipartFile pdf, MultipartFile carta) {
         validarArchivoPdfObligatorio(pdf);
 
-        ProyectoGrado proyecto = proyectoRepo.findById(proyectoId.intValue())
+        // CORRECCIÓN: Convertir Long a Integer
+        Integer proyectoIdInt;
+        try {
+            proyectoIdInt = proyectoId.intValue();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID de proyecto inválido: " + proyectoId);
+        }
+
+        // Buscamos proyecto por id (convertido a Integer)
+        ProyectoGrado proyecto = proyectoRepo.findById(proyectoIdInt)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no existe"));
 
-        if (Boolean.TRUE.equals(proyecto.getEstado() == enumEstadoProyecto.RECHAZADO_DEFINITIVO)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Proyecto rechazado definitivamente");
-        }
-        // Debe haber sido rechazado para permitir reenvío (si manejas ese estado)
-        if (proyecto.getEstado() != enumEstadoProyecto.RECHAZADO) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "El proyecto no está en estado de reenvío");
-        }
-        if (proyecto.getNumeroIntentos() >= 3) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Se alcanzó el máximo de 3 intentos");
+        // Preguntamos al dominio si permite reenvío
+        if (!proyecto.permiteReenvioFormatoA()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El proyecto no permite reenvío de Formato A");
         }
 
-        int next = proyecto.getNumeroIntentos() + 1;
-        proyecto.setNumeroIntentos(next);
-        proyectoRepo.save(proyecto);
+        // Incrementar intentos en el dominio
+        proyecto.incrementarIntentos();
+        proyecto = proyectoRepo.save(proyecto);
 
-        // Si modalidad es práctica y en la nueva versión exigen carta, la validamos:
-        if (proyecto.getModalidad() == enumModalidad.PRACTICA_PROFESIONAL && (carta == null || carta.isEmpty())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carta de aceptación obligatoria en Práctica Profesional");
-        }
+        int next = proyecto.getIntentosFormatoA();
 
+        // Guardar archivos
         String base = "formato-a/" + proyecto.getId() + "/v" + next;
         String pdfPath = guardarArchivo(base, "documento.pdf", pdf);
-        String cartaPath = (proyecto.getModalidad() == enumModalidad.PRACTICA_PROFESIONAL)
+        String cartaPath = carta != null && !carta.isEmpty()
                 ? guardarArchivo(base, "carta.pdf", carta)
                 : null;
 
@@ -203,32 +237,51 @@ public class SubmissionService implements ISubmissionService {
         nueva.setProyecto(proyecto);
         nueva.setNumeroIntento(next);
         nueva.setRutaArchivo(pdfPath);
-        nueva.setNombreArchivo(pdf.getOriginalFilename() != null ? pdf.getOriginalFilename() : "documento.pdf");
+        nueva.setNombreArchivo(Optional.ofNullable(pdf.getOriginalFilename()).orElse("documento.pdf"));
         nueva.setFechaCarga(LocalDateTime.now());
         if (cartaPath != null) {
             nueva.setRutaCartaAceptacion(cartaPath);
-            nueva.setNombreCartaAceptacion(carta.getOriginalFilename());
+            nueva.setNombreCartaAceptacion(Optional.ofNullable(carta.getOriginalFilename()).orElse("carta.pdf"));
         }
         nueva.setEstado(enumEstadoFormato.PENDIENTE);
         formatoRepo.save(nueva);
 
-        // RF4: Enviar notificación asíncrona al coordinador (reenvío)
+        // Delegar evento al dominio
+        proyecto.manejarFormatoA("Formato A reenviado v" + next);
+        proyecto = proyectoRepo.save(proyecto);
+
+        // Notificar usando el método publishNotification directamente
         String coordinadorEmail = identityClient.getCoordinadorEmail();
         String submittedByName = identityClient.getUserName(userId);
+        Integer proyectoIdForNotification = parseIntSafeStringId(proyecto.getId());
 
-        notificationPublisher.notificarFormatoAEnviado(
-                proyecto.getId(),
-                proyecto.getTitulo(),
-                next, // versión 2 o 3
-                submittedByName,
-                coordinadorEmail
-        );
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .notificationType(NotificationType.FORMATO_A_REENVIADO)
+                .subject("Formato A Presentado")
+                .message("Se ha presentado el Formato A v" + next + " para el proyecto: " + proyecto.getTitulo() +
+                        " por: " + submittedByName)
+                .recipients(List.of(
+                        Recipient.builder()
+                                .email(coordinadorEmail)
+                                .role("COORDINATOR")
+                                .build()
+                ))
+                .businessContext(Map.of(
+                        "projectId", proyectoIdForNotification,
+                        "version", next,
+                        "submittedBy", submittedByName,
+                        "projectTitle", proyecto.getTitulo()
+                ))
+                .channel("email")
+                .build();
+
+        notificationPublisher.publishNotification(notificacion, "Formato A enviado v" + next);
 
         log.info("Formato A v{} reenviado para proyecto {} - Notificación enviada al coordinador: {}",
                 next, proyecto.getId(), coordinadorEmail);
 
-        return new IdResponse(proyecto.getId().longValue());
-        }
+        return new IdResponse(parseLongSafeStringId(proyecto.getId()));
+    }
 
     // ------------------------------------------
     // RF3: Cambiar estado de una versión (por Review/Coordinador)
@@ -238,60 +291,25 @@ public class SubmissionService implements ISubmissionService {
     public void cambiarEstadoFormatoA(Long versionId, EvaluacionRequest req) {
         FormatoA formato = formatoRepo.findById(versionId.intValue())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Versión de Formato A no existe"));
+
         ProyectoGrado proyecto = formato.getProyecto();
 
+        // Delegamos la evaluación al agregado raíz (manejo del estado)
+        proyecto.evaluarFormatoA(req.getEstado().name(), req.getObservaciones());
+        proyecto = proyectoRepo.save(proyecto);
+
+        // Actualizamos la entidad FormatoA
         if (req.getEstado() == enumEstadoFormato.APROBADO) {
             formato.aprobar(req.getEvaluadoPor(), req.getObservaciones());
-            proyecto.marcarAprobado();
-            proyectoRepo.save(proyecto);
-            formatoRepo.save(formato);
-
-            // Nota: Las notificaciones de evaluación completada son responsabilidad del review-service
-
-            return;
-        }
-
-        if (req.getEstado() == enumEstadoFormato.RECHAZADO) {
+        } else if (req.getEstado() == enumEstadoFormato.RECHAZADO) {
             formato.rechazar(req.getEvaluadoPor(), req.getObservaciones());
-            proyecto.marcarRechazado();
-            proyectoRepo.save(proyecto);
-            formatoRepo.save(formato);
-
-            // Nota: Las notificaciones de evaluación completada son responsabilidad del review-service
-
-            // Si este rechazo ocurre en el 3er intento => Rechazo definitivo
-            if (Objects.equals(proyecto.getNumeroIntentos(), 3)) {
-                proyecto.marcarComoRechazadoDefinitivo();
-                proyectoRepo.save(proyecto);
-
-                // Notificar a estudiantes y director sobre rechazo definitivo
-                java.util.List<String> recipientEmails = new java.util.ArrayList<>();
-
-                // Agregar emails de estudiantes
-                if (proyecto.getEstudiante1Id() != null) {
-                    recipientEmails.add(identityClient.getUserEmail(proyecto.getEstudiante1Id().toString()));
-                }
-                if (proyecto.getEstudiante2Id() != null) {
-                    recipientEmails.add(identityClient.getUserEmail(proyecto.getEstudiante2Id().toString()));
-                }
-                // Agregar email del director
-                if (proyecto.getDirectorId() != null) {
-                    recipientEmails.add(identityClient.getUserEmail(proyecto.getDirectorId().toString()));
-                }
-
-                if (!recipientEmails.isEmpty()) {
-                    notificationPublisher.notificarRechazoDefinitivo(
-                            proyecto.getId(),
-                            proyecto.getTitulo(),
-                            recipientEmails
-                    );
-                    log.info("Notificaciones de rechazo definitivo enviadas para proyecto {}", proyecto.getId());
-                }
-            }
-            return;
         }
+        formatoRepo.save(formato);
 
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido para evaluación");
+        // Si el dominio derivó a rechazo definitivo (no permite más reenvíos)
+        if (!proyecto.permiteReenvioFormatoA()) {
+            notificationPublisher.notificarRechazoDefinitivoFormatoA(proyecto);
+        }
     }
 
 
@@ -303,54 +321,66 @@ public class SubmissionService implements ISubmissionService {
     public IdResponse subirAnteproyecto(String userId, AnteproyectoData data, MultipartFile pdf) {
         validarArchivoPdfObligatorio(pdf);
 
-        ProyectoGrado proyecto = proyectoRepo.findById(data.getProyectoId().intValue())
+        // CORRECCIÓN: Convertir de Long a Integer
+        Integer proyectoId;
+        try {
+            // Si data.getProyectoId() es Long, conviértelo a Integer
+            proyectoId = data.getProyectoId().intValue();
+        } catch (NullPointerException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID de proyecto no puede ser nulo");
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID de proyecto inválido: " + data.getProyectoId());
+        }
+
+        ProyectoGrado proyecto = proyectoRepo.findById(proyectoId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no existe"));
 
-        // Validar que el user sea el director
-        if (proyecto.getDirectorId() == null || !proyecto.getDirectorId().toString().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo el director del proyecto puede subir el anteproyecto");
+        // Delegar verificación de permisos al dominio si implementado
+        if (!proyecto.permiteSubirAnteproyecto()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "No puede subir anteproyecto en el estado actual");
         }
 
-        // Validar que Formato A esté aprobado
-        if (proyecto.getEstado() != enumEstadoProyecto.APROBADO) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Formato A no está aprobado");
-        }
-
-        // Validar que no exista anteproyecto previo
-        anteproyectoRepo.findByProyecto(proyecto).ifPresent(a -> {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un anteproyecto para este proyecto");
-        });
-
+        // Guardar archivo
         String base = "anteproyectos/" + proyecto.getId();
         String pdfPath = guardarArchivo(base, "documento.pdf", pdf);
 
         Anteproyecto ant = new Anteproyecto();
         ant.setProyecto(proyecto);
         ant.setRutaArchivo(pdfPath);
-        ant.setNombreArchivo(pdf.getOriginalFilename() != null ? pdf.getOriginalFilename() : "documento.pdf");
+        ant.setNombreArchivo(Optional.ofNullable(pdf.getOriginalFilename()).orElse("documento.pdf"));
         ant.setFechaEnvio(LocalDateTime.now());
         anteproyectoRepo.save(ant);
 
-        // (Opcional) Cambiar estado del proyecto si quieres marcar "ANTEPROYECTO_ENVIADO"
-        // proyecto.setEstado(enumEstadoProyecto.ANTEPROYECTO_ENVIADO); // si existe en tu enum
-        // proyectoRepo.save(proyecto);
+        // Delegar al dominio
+        proyecto.manejarAnteproyecto("Anteproyecto presentado");
+        proyecto = proyectoRepo.save(proyecto);
 
-        // RF6: Enviar notificación asíncrona al jefe de departamento
+        // Notificar jefe de departamento
         String jefeDepartamentoEmail = identityClient.getJefeDepartamentoEmail();
         String submittedByName = identityClient.getUserName(userId);
 
-        notificationPublisher.notificarAnteproyectoEnviado(
-                proyecto.getId(),
-                proyecto.getTitulo(),
-                submittedByName,
-                jefeDepartamentoEmail
-        );
+        NotificationRequest notificacion = NotificationRequest.builder()
+                .notificationType(NotificationType.ANTEPROYECTO_PRESENTADO)
+                .subject("Nuevo Anteproyecto Presentado")
+                .message("Se ha presentado un nuevo anteproyecto para el proyecto: " + proyecto.getTitulo() +
+                        " por el estudiante: " + submittedByName)
+                .recipients(List.of(
+                        Recipient.builder()
+                                .email(jefeDepartamentoEmail)
+                                .role("DEPARTMENT_HEAD")
+                                .build()
+                ))
+                .businessContext(Map.of(
+                        "projectId", proyecto.getId(), // Ya es Integer, no necesita conversión
+                        "submittedBy", submittedByName,
+                        "projectTitle", proyecto.getTitulo()
+                ))
+                .channel("email")
+                .build();
 
-        log.info("Anteproyecto enviado para proyecto {} - Notificación enviada al jefe de departamento: {}",
-                proyecto.getId(), jefeDepartamentoEmail);
+        notificationPublisher.publishNotification(notificacion, "Anteproyecto presentado");
 
-
-        return new IdResponse(ant.getId().longValue());
+        return new IdResponse(parseLongSafeStringId(ant.getId().toString()));
     }
 
     @Override
@@ -362,7 +392,7 @@ public class SubmissionService implements ISubmissionService {
                 .map(a -> {
                     AnteproyectoView v = new AnteproyectoView();
                     v.setId(a.getId().longValue());
-                    v.setProyectoId(a.getProyecto().getId().longValue());
+                    v.setProyectoId(a.getProyecto() != null ? safeParseLong(a.getProyecto().getId()) : null);
                     v.setPdfUrl(a.getRutaArchivo());
                     v.setFechaEnvio(a.getFechaEnvio());
                     v.setEstado(a.getEstado());
@@ -383,19 +413,17 @@ public class SubmissionService implements ISubmissionService {
         Anteproyecto ant = anteproyectoRepo.findById(id.intValue())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Anteproyecto no existe"));
         ant.setEstado(req.getEstado());
-        // si quieres guardar observaciones, añade un campo en la entidad
         anteproyectoRepo.save(ant);
     }
 
     // ---------------------------
-    // Utilidades
+    // Utilidades (helpers pequeños)
     // ---------------------------
     private void validarArchivoPdfObligatorio(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Archivo PDF obligatorio");
         }
         if (!Objects.equals(file.getContentType(), "application/pdf")) {
-            // No todos los clientes mandan el content-type correcto, así que esto es laxo
             if (file.getOriginalFilename() == null || !file.getOriginalFilename().toLowerCase().endsWith(".pdf")) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El archivo debe ser PDF");
             }
@@ -406,7 +434,7 @@ public class SubmissionService implements ISubmissionService {
         if (data.getModalidad() == enumModalidad.PRACTICA_PROFESIONAL) {
             if (carta == null || carta.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Carta de aceptación de la empresa es obligatoria en Práctica Profesional");
+                        "Carta de aceptación obligatoria en Práctica Profesional");
             }
         }
     }
@@ -418,7 +446,6 @@ public class SubmissionService implements ISubmissionService {
             Files.createDirectories(dir);
             Path full = dir.resolve(fileName).normalize();
             Files.write(full, file.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            // Retornamos ruta absoluta en disco (o relativa si prefieres)
             return full.toString();
         } catch (IOException e) {
             log.error("Error guardando archivo", e);
@@ -426,7 +453,23 @@ public class SubmissionService implements ISubmissionService {
         }
     }
 
-    private Integer parseIntSafe(String s) {
-        try { return Integer.parseInt(s); } catch (Exception e) { return null; }
+    private Integer parseIntSafeStringId(String id) {
+        try {
+            return Integer.parseInt(id);
+        } catch (Exception e) {
+            return null; // si no es convertible, devolvemos null y el publisher debe soportarlo
+        }
+    }
+
+    private Long parseLongSafeStringId(String id) {
+        try {
+            return Long.parseLong(id);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Long safeParseLong(String id) {
+        try { return id == null ? null : Long.parseLong(id); } catch (Exception e) { return null; }
     }
 }
