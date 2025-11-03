@@ -1,6 +1,7 @@
 package co.unicauca.comunicacionmicroservicios.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -59,6 +60,12 @@ public class RabbitConfig {
     public Jackson2JsonMessageConverter jackson2JsonMessageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
     }
+    /**
+     * Nombre de la cola compartida para todas las notificaciones.
+     * Esta cola es consumida por el notification-service.
+     */
+    public static final String NOTIFICATIONS_QUEUE = "notifications.q";
+
 
     // RabbitTemplate con converter JSON
     @Bean
@@ -66,5 +73,14 @@ public class RabbitConfig {
         RabbitTemplate rt = new RabbitTemplate(connectionFactory);
         rt.setMessageConverter(converter);
         return rt;
+    }
+    /**
+     * Declaración de la cola de notificaciones.
+     * Solo se declara en el productor para asegurar que existe.
+     * El notification-service también la declara (operación idempotente).
+     */
+    @Bean
+    public Queue notificationsQueue() {
+        return new Queue(NOTIFICATIONS_QUEUE, true); // durable
     }
 }
