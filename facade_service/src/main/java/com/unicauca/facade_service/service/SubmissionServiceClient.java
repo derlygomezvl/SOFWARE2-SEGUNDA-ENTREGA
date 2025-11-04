@@ -4,6 +4,7 @@ import com.unicauca.facade_service.dto.FormatoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.util.Map;
 
 /**
  * Cliente REST para submission-service.
@@ -34,6 +36,9 @@ public class SubmissionServiceClient {
 
     @Value("${facade.external.submission_service.anteproyectos.endpoint}")
     private String atrAnteproyectoEndpoint;
+
+    @Value("${facade.external.submission_service.documents.endpoint}")
+    private String atrDocumentoEndpoint;
 
     public SubmissionServiceClient(
             RestTemplate atrRestTemplate
@@ -284,5 +289,49 @@ public class SubmissionServiceClient {
             ATR_LOGGER.error("Error en cambiar estado formato: {}", ex.getMessage());
             return ex.getMessage();
         }
+    }
+
+    public String procesarDocumento(
+            String prmProyectoId,
+            String prmTipoDocumento,
+            String prmUsuarioId,
+            String prmTitulo,
+            String prmModalidad,
+            String prmObjetivoGeneral,
+            String prmObjetivosEspecificos,
+            String prmArchivoAdjunto,
+            Map<String, Object> prmMetaData
+    )
+    {
+//        String objUrl = atrBaseUrl + atrDocumentoEndpoint + "/proyecto/" + prmProyectoId + "/procesar";
+//
+//        try
+//            {
+//                MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+//
+//                body.add("proyectoId", prmProyectoId);
+//                body.add("pdf", pdfResource);
+//
+//                HttpHeaders headers = new HttpHeaders();
+//                headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+//                headers.add("X-User-Role", prmRole);
+//                headers.add("X-User-Id", prmUserId);
+//
+//                HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+//
+//                ResponseEntity<String> response = atrRestTemplate.exchange(
+//                        objUrl,
+//                        HttpMethod.POST,
+//                        requestEntity,
+//                        String.class
+//                );
+//
+//                return response.getBody();
+//
+//        } catch (Exception ex) {
+//                ex.printStackTrace();
+//                return ex.getMessage();
+//        }
+        return null;
     }
 }

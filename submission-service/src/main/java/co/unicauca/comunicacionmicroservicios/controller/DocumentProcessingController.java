@@ -28,9 +28,10 @@ public class DocumentProcessingController {
     @PostMapping("/proyecto/{proyectoId}/procesar")
 //    @Operation(summary = "Procesar documento usando Template Method Pattern")
     public ResponseEntity<ProcessResult> procesarDocumento(
-            @PathVariable String proyectoId,
-            @RequestBody DocumentProcessingRequest request) {
-
+        @PathVariable String proyectoId,
+        DocumentProcessingRequest request
+    ) 
+    {
         DocumentData documentData = DocumentData.builder()
                 .tipo(request.getTipoDocumento())
                 .contenido(request.getContenido())
@@ -55,9 +56,10 @@ public class DocumentProcessingController {
     @PostMapping("/proyecto/{proyectoId}/formato-a")
 //    @Operation(summary = "Procesar Formato A (endpoint específico)")
     public ResponseEntity<ProcessResult> procesarFormatoA(
-            @PathVariable String proyectoId,
-            @RequestBody FormatoARequest request) {
-
+        @PathVariable String proyectoId,
+        FormatoARequest request
+    ) 
+    {
         DocumentData documentData = DocumentData.createFormatoAData(
                 request.getContenido(),
                 request.getUsuarioId(),
@@ -78,8 +80,9 @@ public class DocumentProcessingController {
     @PostMapping("/proyecto/{proyectoId}/anteproyecto")
 //    @Operation(summary = "Procesar Anteproyecto (endpoint específico)")
     public ResponseEntity<ProcessResult> procesarAnteproyecto(
-            @PathVariable String proyectoId,
-            @RequestBody AnteproyectoRequest request) {
+        @PathVariable String proyectoId,
+        AnteproyectoRequest request
+    ) {
 
         DocumentData documentData = DocumentData.createAnteproyectoData(
                 request.getContenido(),
@@ -98,8 +101,9 @@ public class DocumentProcessingController {
     @PostMapping("/proyecto/{proyectoId}/formato-a/corregido")
 //    @Operation(summary = "Reenviar Formato A con correcciones")
     public ResponseEntity<ProcessResult> reenviarFormatoACorregido(
-            @PathVariable String proyectoId,
-            @RequestBody FormatoACorregidoRequest request) {
+        @PathVariable String proyectoId,
+        FormatoACorregidoRequest request
+    ) {
 
         DocumentData documentData = DocumentData.createFormatoACorregidoData(
                 request.getContenido(),
