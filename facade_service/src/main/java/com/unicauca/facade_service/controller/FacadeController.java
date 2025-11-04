@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -138,7 +139,8 @@ public class FacadeController {
             String estado,
             String observaciones,
             Integer evaluadoPor
-    ) {
+    )
+    {
         ATR_LOGGER.info("API: PATCH /facade/formatos/{versionId}/estado");
 
         String objResponse = atrSistemaFacade.cambiarEstadoFormato(caller,versionId,estado,observaciones,evaluadoPor);
@@ -146,6 +148,128 @@ public class FacadeController {
         if(objResponse != null)
             return ResponseEntity.ok(objResponse);
         return ResponseEntity.status(502).body(objResponse);
+    }
+
+    @PostMapping(path = "/documents/{proyectoId}/procesar")
+    public ResponseEntity<String> procesarDocumento(
+            @PathVariable String proyectoId,
+            String tipoDocumento,
+            String contenido,
+            String usuarioId,
+            String titulo,
+            String modalidad,
+            String objetivoGeneral,
+            String objetivosEspecificos,
+            String archivoAdjunto,
+            Map<String, Object> metadata
+    )
+    {
+        ATR_LOGGER.info("API: POST /facade/documents/{proyectoId}/procesar");
+
+        String objResponse = atrSistemaFacade.procesarDocumento(
+                proyectoId,
+                tipoDocumento,
+                contenido,
+                usuarioId,
+                titulo,
+                modalidad,
+                objetivoGeneral,
+                objetivosEspecificos,
+                archivoAdjunto,
+                metadata
+        );
+
+        if(objResponse != null)
+            return ResponseEntity.ok(objResponse);
+        return ResponseEntity.status(502).body(objResponse);
+    }
+
+    @PostMapping(path = "/documents/{proyectoId}/formato-a")
+    public ResponseEntity<String> procesarFormatoA(
+            @PathVariable String proyectoId,
+            String contenido,
+            String usuarioId,
+            String titulo,
+            String modalidad,
+            String objetivoGeneral,
+            String objetivosEspecificos,
+            String archivoAdjunto
+    )
+    {
+        ATR_LOGGER.info("API: POST /facade/documents/{proyectoId}/formato-a");
+
+        String objResponse = atrSistemaFacade.procesarFormatoA(
+                proyectoId,
+                contenido,
+                usuarioId,
+                titulo,
+                modalidad,
+                objetivoGeneral,
+                objetivosEspecificos,
+                archivoAdjunto
+        );
+
+        if(objResponse != null)
+            return ResponseEntity.ok(objResponse);
+        return ResponseEntity.status(502).body(objResponse);
+    }
+
+    @PostMapping(path = "/documents/{proyectoId}/anteproyecto")
+    public ResponseEntity<String> procesarAnteproyecto(
+            @PathVariable String proyectoId,
+            String contenido,
+            String usuarioId,
+            String titulo,
+            String archivoAdjunto
+    )
+    {
+        ATR_LOGGER.info("API: POST /facade/documents/{proyectoId}/anteproyecto");
+
+        String objResponse = atrSistemaFacade.procesarAnteproyecto(
+                proyectoId,
+                contenido,
+                usuarioId,
+                titulo,
+                archivoAdjunto
+        );
+
+        if(objResponse != null)
+            return ResponseEntity.ok(objResponse);
+        return ResponseEntity.status(502).body(objResponse);
+    }
+
+    @PostMapping(path = "/documents/{proyectoId}/formato-a/corregido")
+    public ResponseEntity<String> reeviarFormatoACorregido(
+            @PathVariable String proyectoId,
+            String contenido,
+            String usuarioId,
+            String observacionesAnteriores
+    )
+    {
+        ATR_LOGGER.info("API: POST /facade/documents/{proyectoId}/formato-a/corregido");
+
+        String objResponse = atrSistemaFacade.reenviarFormatoACorregido(
+                proyectoId,
+                contenido,
+                usuarioId,
+                observacionesAnteriores
+        );
+
+        if(objResponse != null)
+            return ResponseEntity.ok(objResponse);
+        return ResponseEntity.status(502).body(objResponse);
+    }
+
+    @GetMapping(path = "/documents/{proyectoId}/permisos")
+    public ResponseEntity<String> obtenerPermisos(@PathVariable String proyectoId)
+    {
+        return ResponseEntity.ok(atrSistemaFacade.obtenerPermisos(proyectoId));
+    }
+
+    @GetMapping(path = "/documents/tipos-documento")
+    public ResponseEntity<String> obtenerTiposDocumento(@PathVariable String proyectoId)
+    {
+        return ResponseEntity.ok(atrSistemaFacade.obtenerTiposDocumentos());
     }
 
     // Microservicio de notificaciones:

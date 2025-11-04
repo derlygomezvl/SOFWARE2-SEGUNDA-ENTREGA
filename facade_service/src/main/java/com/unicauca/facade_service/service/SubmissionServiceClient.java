@@ -294,6 +294,7 @@ public class SubmissionServiceClient {
     public String procesarDocumento(
             String prmProyectoId,
             String prmTipoDocumento,
+            String prmContenido,
             String prmUsuarioId,
             String prmTitulo,
             String prmModalidad,
@@ -303,35 +304,178 @@ public class SubmissionServiceClient {
             Map<String, Object> prmMetaData
     )
     {
-//        String objUrl = atrBaseUrl + atrDocumentoEndpoint + "/proyecto/" + prmProyectoId + "/procesar";
-//
-//        try
-//            {
-//                MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-//
-//                body.add("proyectoId", prmProyectoId);
-//                body.add("pdf", pdfResource);
-//
-//                HttpHeaders headers = new HttpHeaders();
-//                headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-//                headers.add("X-User-Role", prmRole);
-//                headers.add("X-User-Id", prmUserId);
-//
-//                HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-//
-//                ResponseEntity<String> response = atrRestTemplate.exchange(
-//                        objUrl,
-//                        HttpMethod.POST,
-//                        requestEntity,
-//                        String.class
-//                );
-//
-//                return response.getBody();
-//
-//        } catch (Exception ex) {
-//                ex.printStackTrace();
-//                return ex.getMessage();
-//        }
-        return null;
+        String objUrl = atrBaseUrl + atrDocumentoEndpoint + "/proyecto/" + prmProyectoId + "/procesar";
+
+        try
+            {
+                MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+                body.add("tipoDocumento", prmTipoDocumento);
+                body.add("contenido", prmContenido);
+                body.add("usuarioId", prmUsuarioId);
+                body.add("titulo", prmTitulo);
+                body.add("modalidad", prmModalidad);
+                body.add("objetivoGeneral", prmObjetivoGeneral);
+                body.add("objetivosEspecificos", prmObjetivosEspecificos);
+                body.add("archivoAdjunto", prmArchivoAdjunto);
+                body.add("metadata", prmMetaData);
+
+                HttpHeaders headers = new HttpHeaders();
+                HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+                ResponseEntity<String> response = atrRestTemplate.exchange(
+                        objUrl,
+                        HttpMethod.POST,
+                        requestEntity,
+                        String.class
+                );
+
+                return response.getBody();
+
+        } catch (Exception ex) {
+                ex.printStackTrace();
+                return ex.getMessage();
+        }
+    }
+
+    public String procesarFormatoA(
+            String prmProyectoId,
+            String prmContenido,
+            String prmUsuarioId,
+            String prmTitulo,
+            String prmModalidad,
+            String prmObjetivoGeneral,
+            String prmObjetivosEspecificos,
+            String prmArchivoAdjunto
+    )
+    {
+        String objUrl = atrBaseUrl + atrDocumentoEndpoint + "/proyecto/" + prmProyectoId + "/formato-a";
+
+        try
+        {
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+            body.add("contenido", prmContenido);
+            body.add("usuarioId", prmUsuarioId);
+            body.add("titulo", prmTitulo);
+            body.add("modalidad", prmModalidad);
+            body.add("objetivoGeneral", prmObjetivoGeneral);
+            body.add("objetivosEspecificos", prmObjetivosEspecificos);
+            body.add("archivoAdjunto", prmArchivoAdjunto);
+
+            HttpHeaders headers = new HttpHeaders();
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> response = atrRestTemplate.exchange(
+                    objUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    String.class
+            );
+
+            return response.getBody();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ex.getMessage();
+        }
+    }
+
+    public String procesarAnteproyecto(
+            String prmProyectoId,
+            String prmContenido,
+            String prmUsuarioId,
+            String prmTitulo,
+            String prmArchivoAdjunto
+    )
+    {
+        String objUrl = atrBaseUrl + atrDocumentoEndpoint + "/proyecto/" + prmProyectoId + "/anteproyecto";
+
+        try
+        {
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+            body.add("contenido", prmContenido);
+            body.add("usuarioId", prmUsuarioId);
+            body.add("titulo", prmTitulo);
+            body.add("archivoAdjunto", prmArchivoAdjunto);
+
+            HttpHeaders headers = new HttpHeaders();
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> response = atrRestTemplate.exchange(
+                    objUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    String.class
+            );
+
+            return response.getBody();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ex.getMessage();
+        }
+    }
+
+    public String reenviarFormatoACorregido(
+            String prmProyectoId,
+            String prmContenido,
+            String prmUsuarioId,
+            String prmObsrvacionesAnteriores
+    )
+    {
+        String objUrl = atrBaseUrl + atrDocumentoEndpoint + "/proyecto/" + prmProyectoId + "/formato-a/anteproyecto";
+
+        try
+        {
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+            body.add("contenido", prmContenido);
+            body.add("usuarioId", prmUsuarioId);
+            body.add("observacionesAnteriores", prmObsrvacionesAnteriores);
+
+            HttpHeaders headers = new HttpHeaders();
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> response = atrRestTemplate.exchange(
+                    objUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    String.class
+            );
+
+            return response.getBody();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ex.getMessage();
+        }
+    }
+
+    public String obtenerPermisos(String prmProyectoId)
+    {
+        String objUrl = atrBaseUrl + atrDocumentoEndpoint+ "/proyecto/" + prmProyectoId + "/permisos";
+
+        try {
+            ResponseEntity<String> objResponse = atrRestTemplate.getForEntity(objUrl, String.class);
+            return objResponse.getBody();
+        } catch (RestClientException e) {
+            ATR_LOGGER.error("Error en obtener permisos: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public String obtenerTiposDocumentos()
+    {
+        String objUrl = atrBaseUrl + atrDocumentoEndpoint+ "/tipos-documento";
+
+        try {
+            ResponseEntity<String> objResponse = atrRestTemplate.getForEntity(objUrl, String.class);
+            return objResponse.getBody();
+        } catch (RestClientException e) {
+            ATR_LOGGER.error("Error en obtener tipos de documento: {}", e.getMessage());
+            return null;
+        }
     }
 }

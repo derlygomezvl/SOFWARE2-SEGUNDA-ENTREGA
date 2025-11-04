@@ -24,17 +24,17 @@ public class SistemaFacade {
     private final Logger atrLogger = LoggerFactory.getLogger(SistemaFacade.class);
 
     private final DocenteServiceClient atrDocenteServiceClient;
-    private final SubmissionServiceClient atrFormatoServiceClient;
+    private final SubmissionServiceClient atrSubmissionService;
     private final NotificacionServiceClient atrNotificacionServiceClient;
 
     public SistemaFacade(
             DocenteServiceClient atrDocenteServiceClient,
-             SubmissionServiceClient atrFormatoServiceClient,
+             SubmissionServiceClient atrSubmissionService,
              NotificacionServiceClient atrNotificacionServiceClient
     )
     {
         this.atrDocenteServiceClient = atrDocenteServiceClient;
-        this.atrFormatoServiceClient = atrFormatoServiceClient;
+        this.atrSubmissionService = atrSubmissionService;
         this.atrNotificacionServiceClient = atrNotificacionServiceClient;
     }
 
@@ -64,7 +64,7 @@ public class SistemaFacade {
     ) throws IOException {
         atrLogger.info("Facade: iniciar subir anteproyecto -> {}", prmProyectoId);
 
-        String objSubidaOk = atrFormatoServiceClient.subirAnteproyecto(
+        String objSubidaOk = atrSubmissionService.subirAnteproyecto(
                 prmRole,
                 prmUserId,
                 prmProyectoId,
@@ -79,7 +79,7 @@ public class SistemaFacade {
 
     public String listarAnteproyectos(int prmPage, int prmSize)
     {
-        return atrFormatoServiceClient.listarAnteproyectos(prmPage, prmSize);
+        return atrSubmissionService.listarAnteproyectos(prmPage, prmSize);
     }
 
     public String cambiarEstadoAnteproyecto(
@@ -91,7 +91,7 @@ public class SistemaFacade {
     {
         atrLogger.info("Facade: Cambiar estado anteproyecto");
 
-        String objSubidaOk = atrFormatoServiceClient.cambiarEstadoAnteproyecto(
+        String objSubidaOk = atrSubmissionService.cambiarEstadoAnteproyecto(
                 prmCaller,
                 prmId,
                 prmEstado,
@@ -114,7 +114,7 @@ public class SistemaFacade {
     {
         atrLogger.info("Facade: iniciar subir formato -> {}", prmFormato.getTitulo());
 
-        String objSubidaOk = atrFormatoServiceClient.subirFormato(
+        String objSubidaOk = atrSubmissionService.subirFormato(
                 prmRole,
                 prmUserId,
                 prmFormato,
@@ -131,13 +131,13 @@ public class SistemaFacade {
     public String obtenerFormato(Long prmId)
     {
         atrLogger.info("Facade: obtener formato con id -> {}", prmId);
-        return atrFormatoServiceClient.obtenerFormato(prmId);
+        return atrSubmissionService.obtenerFormato(prmId);
     }
 
     public String listarFormato(String prmDocenteId, int prmPage, int prmSize)
     {
         atrLogger.info("Facade: obtener formatos con docente id -> {}", prmDocenteId);
-        return atrFormatoServiceClient.listarFormato(prmDocenteId, prmPage, prmSize);
+        return atrSubmissionService.listarFormato(prmDocenteId, prmPage, prmSize);
     }
 
     public String reenviarFormato(
@@ -149,7 +149,7 @@ public class SistemaFacade {
     ) {
         atrLogger.info("Facade: iniciar subir formato con proyecto id -> {}", prmProyectoId);
 
-        String objSubidaOk = atrFormatoServiceClient.reenviarFormato(
+        String objSubidaOk = atrSubmissionService.reenviarFormato(
                 prmRole,
                 prmUserId,
                 prmProyectoId,
@@ -173,7 +173,7 @@ public class SistemaFacade {
     {
         atrLogger.info("Facade: Cambiar estado formato");
 
-        String objSubidaOk = atrFormatoServiceClient.cambiarEstadoFormato(
+        String objSubidaOk = atrSubmissionService.cambiarEstadoFormato(
                 prmCaller,
                 prmVersionId,
                 prmEstado,
@@ -229,5 +229,127 @@ public class SistemaFacade {
             atrLogger.warn("Facade: enviar notificacion asincrona falló");
         }
         return objSubidaOk;
+    }
+
+    public String procesarDocumento(
+            String prmProyectoId,
+            String prmTipoDocumento,
+            String prmContenido,
+            String prmUsuarioId,
+            String prmTitulo,
+            String prmModalidad,
+            String prmObjetivoGeneral,
+            String prmObjetivosEspecificos,
+            String prmArchivoAdjunto,
+            Map<String, Object> prmMetaData
+    )
+    {
+        atrLogger.info("Facade: procesar documento");
+
+        String objSubidaOk = atrSubmissionService.procesarDocumento(
+                prmProyectoId,
+                prmTipoDocumento,
+                prmContenido,
+                prmUsuarioId,
+                prmTitulo,
+                prmModalidad,
+                prmObjetivoGeneral,
+                prmObjetivosEspecificos,
+                prmArchivoAdjunto,
+                prmMetaData
+        );
+
+        if(objSubidaOk == null) {
+            atrLogger.warn("Facade: procesar documento falló");
+        }
+        return objSubidaOk;
+    }
+
+    public String procesarFormatoA(
+            String prmProyectoId,
+            String prmContenido,
+            String prmUsuarioId,
+            String prmTitulo,
+            String prmModalidad,
+            String prmObjetivoGeneral,
+            String prmObjetivosEspecificos,
+            String prmArchivoAdjunto
+    )
+    {
+        atrLogger.info("Facade: procesar formato A");
+
+        String objSubidaOk = atrSubmissionService.procesarFormatoA(
+                prmProyectoId,
+                prmContenido,
+                prmUsuarioId,
+                prmTitulo,
+                prmModalidad,
+                prmObjetivoGeneral,
+                prmObjetivosEspecificos,
+                prmArchivoAdjunto
+        );
+
+        if(objSubidaOk == null) {
+            atrLogger.warn("Facade: procesar formato A falló");
+        }
+        return objSubidaOk;
+    }
+
+    public String procesarAnteproyecto(
+            String prmProyectoId,
+            String prmContenido,
+            String prmUsuarioId,
+            String prmTitulo,
+            String prmArchivoAdjunto
+    )
+    {
+        atrLogger.info("Facade: procesar anteproyecto");
+
+        String objSubidaOk = atrSubmissionService.procesarAnteproyecto(
+                prmProyectoId,
+                prmContenido,
+                prmUsuarioId,
+                prmTitulo,
+                prmArchivoAdjunto
+        );
+
+        if(objSubidaOk == null) {
+            atrLogger.warn("Facade: procesar anteproyecto falló");
+        }
+        return objSubidaOk;
+    }
+
+    public String reenviarFormatoACorregido(
+            String prmProyectoId,
+            String prmContenido,
+            String prmUsuarioId,
+            String prmObsrvacionesAnteriores
+    )
+    {
+        atrLogger.info("Facade: reenviar formato A corregido");
+
+        String objSubidaOk = atrSubmissionService.reenviarFormatoACorregido(
+                prmProyectoId,
+                prmContenido,
+                prmUsuarioId,
+                prmObsrvacionesAnteriores
+        );
+
+        if(objSubidaOk == null) {
+            atrLogger.warn("Facade: reenviar formato A corregido falló");
+        }
+        return objSubidaOk;
+    }
+
+    public String obtenerPermisos(String prmProyectoId)
+    {
+        atrLogger.info("Facade: obtener permisos");
+        return atrSubmissionService.obtenerPermisos(prmProyectoId);
+    }
+
+    public String obtenerTiposDocumentos()
+    {
+        atrLogger.info("Facade: obtener tipos de documentos");
+        return atrSubmissionService.obtenerTiposDocumentos();
     }
 }
