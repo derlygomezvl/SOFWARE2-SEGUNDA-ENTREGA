@@ -1,4 +1,4 @@
-package com.unicauca.comunicacionmicroservicios.web;
+package co.unicauca.comunicacionmicroservicios.web;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
