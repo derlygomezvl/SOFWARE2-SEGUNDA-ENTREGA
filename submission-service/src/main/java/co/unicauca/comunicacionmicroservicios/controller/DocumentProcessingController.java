@@ -4,8 +4,8 @@ import co.unicauca.comunicacionmicroservicios.service.DocumentProcessingService;
 import co.unicauca.comunicacionmicroservicios.service.ProjectStateService;
 import co.unicauca.comunicacionmicroservicios.service.template.DocumentData;
 import co.unicauca.comunicacionmicroservicios.service.template.ProcessResult;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+//import io.swagger.v3.oas.annotations.Operation;
+//import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/documents")
-@Tag(name = "Document Processing", description = "API para procesamiento de documentos usando State y Template Method patterns")
+//@Tag(name = "Document Processing", description = "API para procesamiento de documentos usando State y Template Method patterns")
 public class DocumentProcessingController {
 
     private final DocumentProcessingService documentProcessingService;
@@ -26,7 +26,7 @@ public class DocumentProcessingController {
     }
 
     @PostMapping("/proyecto/{proyectoId}/procesar")
-    @Operation(summary = "Procesar documento usando Template Method Pattern")
+//    @Operation(summary = "Procesar documento usando Template Method Pattern")
     public ResponseEntity<ProcessResult> procesarDocumento(
             @PathVariable String proyectoId,
             @RequestBody DocumentProcessingRequest request) {
@@ -53,7 +53,7 @@ public class DocumentProcessingController {
     }
 
     @PostMapping("/proyecto/{proyectoId}/formato-a")
-    @Operation(summary = "Procesar Formato A (endpoint específico)")
+//    @Operation(summary = "Procesar Formato A (endpoint específico)")
     public ResponseEntity<ProcessResult> procesarFormatoA(
             @PathVariable String proyectoId,
             @RequestBody FormatoARequest request) {
@@ -76,7 +76,7 @@ public class DocumentProcessingController {
     }
 
     @PostMapping("/proyecto/{proyectoId}/anteproyecto")
-    @Operation(summary = "Procesar Anteproyecto (endpoint específico)")
+//    @Operation(summary = "Procesar Anteproyecto (endpoint específico)")
     public ResponseEntity<ProcessResult> procesarAnteproyecto(
             @PathVariable String proyectoId,
             @RequestBody AnteproyectoRequest request) {
@@ -96,7 +96,7 @@ public class DocumentProcessingController {
     }
 
     @PostMapping("/proyecto/{proyectoId}/formato-a/corregido")
-    @Operation(summary = "Reenviar Formato A con correcciones")
+//    @Operation(summary = "Reenviar Formato A con correcciones")
     public ResponseEntity<ProcessResult> reenviarFormatoACorregido(
             @PathVariable String proyectoId,
             @RequestBody FormatoACorregidoRequest request) {
@@ -115,7 +115,7 @@ public class DocumentProcessingController {
     }
 
     @GetMapping("/proyecto/{proyectoId}/permisos")
-    @Operation(summary = "Obtener permisos actuales del proyecto usando State Pattern")
+//    @Operation(summary = "Obtener permisos actuales del proyecto usando State Pattern")
     public ResponseEntity<Map<String, Object>> obtenerPermisos(@PathVariable String proyectoId) {
         Map<String, Boolean> permisos = Map.of(
                 "puedeAvanzar", projectStateService.puedeAvanzar(proyectoId),
@@ -133,7 +133,7 @@ public class DocumentProcessingController {
     }
 
     @GetMapping("/tipos-documento")
-    @Operation(summary = "Obtener tipos de documento soportados")
+//    @Operation(summary = "Obtener tipos de documento soportados")
     public ResponseEntity<Map<String, String>> obtenerTiposDocumento() {
         return ResponseEntity.ok(documentProcessingService.getTiposDocumentoSoportados());
     }

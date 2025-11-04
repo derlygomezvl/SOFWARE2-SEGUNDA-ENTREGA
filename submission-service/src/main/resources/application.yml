@@ -4,71 +4,55 @@ server:
 spring:
   application:
     name: submission-service
-
   datasource:
-    url: jdbc:postgresql://${DATABASE_HOST:postgres-submission}:${DATABASE_PORT:5432}/${DATABASE_NAME:submissiondb}
-    username: ${DATABASE_USERNAME:submission_user}
-    password: ${DATABASE_PASSWORD:submission_pass}
-    driver-class-name: org.postgresql.Driver
-
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:./data/submission_service.sqlite
   jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
     hibernate:
-      ddl-auto: update  # validate en producción
+      ddl-auto: update
     show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
 
   rabbitmq:
-    host: ${RABBITMQ_HOST:rabbitmq}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:admin}
-    password: ${RABBITMQ_PASSWORD:admin_password}
+    host: rabbitmq-local
+    port: 5672
+    username: guest
+    password: guest
 
-  servlet:
-    multipart:
-      max-file-size: 15MB
-      max-request-size: 20MB
+jwt:
+  secret: test-secret-key-for-jwt-validation-minimum-256-bits-long
+  expiration: 86400000
 
-# Almacenamiento de archivos
-file:
-  storage:
-    path: ${FILE_STORAGE_PATH:/app/uploads}
+# Exchanges y routing keys que usa RabbitConfig
+submission:
+  exchanges:
+    formato-a: formato-a-exchange
+    anteproyecto: anteproyecto-exchange
+    proyecto: proyecto-exchange
+  routing:
+    formato-a-enviado: formato-a.enviado
+    formato-a-reenviado: formato-a.reenviado
+    anteproyecto-enviado: anteproyecto.enviado
+    proyecto-rechazo-def: proyecto.rechazado-definitivamente
 
-# Cliente HTTP para Identity Service
-identity:
-  base-url: ${IDENTITY_SERVICE_URL:http://identity:8081}
+notification:
+  base-url: http://localhost:8083/api/notifications
   timeout-ms: 3000
 
-# Configuración de notificaciones
-notification:
-  # Emails por defecto (TEMPORAL - deberían obtenerse del identity-service)
-  default:
-    coordinador-email: ${COORDINADOR_EMAIL:coordinador@unicauca.edu.co}
-    jefe-departamento-email: ${JEFE_DEPARTAMENTO_EMAIL:jefe.departamento@unicauca.edu.co}
+file:
+  storage:
+    path: /app/uploads
 
-# Logging
 logging:
   level:
     root: INFO
     co.unicauca.comunicacionmicroservicios: DEBUG
     org.springframework.amqp: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
-# Actuator endpoints
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics
       base-path: /actuator
-  endpoint:
-    health:
-      show-details: always
-  health:
-    rabbit:
-      enabled: true
-    db:
-      enabled: true
+  endpoint.health.show-details: always
