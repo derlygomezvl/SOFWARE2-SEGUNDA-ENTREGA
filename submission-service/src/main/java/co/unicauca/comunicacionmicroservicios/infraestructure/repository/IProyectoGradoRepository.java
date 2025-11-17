@@ -11,5 +11,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import co.unicauca.comunicacionmicroservicios.domain.model.*;
 
 public interface IProyectoGradoRepository extends JpaRepository<ProyectoGrado, Integer> {
-    long countByDirector_Id(Integer directorId);
+    //long countByDirector_Id(Integer directorId);
  }

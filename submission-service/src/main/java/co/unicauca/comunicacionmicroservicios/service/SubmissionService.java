@@ -102,7 +102,7 @@ public class SubmissionService implements ISubmissionService {
         String submittedByName = identityClient.getUserName(userId);
         Integer proyectoIdInt;
         try {
-            proyectoIdInt = Integer.parseInt(proyecto.getId());
+            proyectoIdInt = Integer.parseInt(String.valueOf(proyecto.getId()));
         } catch (NumberFormatException e) {
             proyectoIdInt = null;
         }
@@ -133,7 +133,7 @@ public class SubmissionService implements ISubmissionService {
         log.info("Formato A v1 creado para proyecto {} - Notificación enviada al coordinador: {}",
                 proyecto.getId(), coordinadorEmail);
 
-        return new IdResponse(parseLongSafeStringId(proyecto.getId()));
+        return new IdResponse(parseLongSafeStringId(String.valueOf(proyecto.getId())));
     }
 
     // ---------------------------
@@ -147,7 +147,7 @@ public class SubmissionService implements ISubmissionService {
 
         FormatoAView view = new FormatoAView();
         view.setId(fa.getId().longValue());
-        view.setProyectoId(fa.getProyecto() != null ? safeParseLong(fa.getProyecto().getId()) : null);
+        view.setProyectoId(fa.getProyecto() != null ? safeParseLong(String.valueOf(fa.getProyecto().getId())) : null);
         view.setVersion(fa.getNumeroIntento());
         view.setEstado(fa.getEstado());
         view.setObservaciones(fa.getObservaciones());
@@ -177,7 +177,7 @@ public class SubmissionService implements ISubmissionService {
                 .map(fa -> {
                     FormatoAView v = new FormatoAView();
                     v.setId(fa.getId().longValue());
-                    v.setProyectoId(fa.getProyecto() != null ? safeParseLong(fa.getProyecto().getId()) : null);
+                    v.setProyectoId(fa.getProyecto() != null ? safeParseLong(String.valueOf(fa.getProyecto().getId())) : null);
                     v.setVersion(fa.getNumeroIntento());
                     v.setEstado(fa.getEstado());
                     v.setNombreArchivo(fa.getNombreArchivo());
@@ -253,7 +253,7 @@ public class SubmissionService implements ISubmissionService {
         // Notificar usando el método publishNotification directamente
         String coordinadorEmail = identityClient.getCoordinadorEmail();
         String submittedByName = identityClient.getUserName(userId);
-        Integer proyectoIdForNotification = parseIntSafeStringId(proyecto.getId());
+        Integer proyectoIdForNotification = parseIntSafeStringId(String.valueOf(proyecto.getId()));
 
         NotificationRequest notificacion = NotificationRequest.builder()
                 .notificationType(NotificationType.FORMATO_A_REENVIADO)
@@ -280,7 +280,7 @@ public class SubmissionService implements ISubmissionService {
         log.info("Formato A v{} reenviado para proyecto {} - Notificación enviada al coordinador: {}",
                 next, proyecto.getId(), coordinadorEmail);
 
-        return new IdResponse(parseLongSafeStringId(proyecto.getId()));
+        return new IdResponse(parseLongSafeStringId(String.valueOf(proyecto.getId())));
     }
 
     // ------------------------------------------
@@ -392,7 +392,7 @@ public class SubmissionService implements ISubmissionService {
                 .map(a -> {
                     AnteproyectoView v = new AnteproyectoView();
                     v.setId(a.getId().longValue());
-                    v.setProyectoId(a.getProyecto() != null ? safeParseLong(a.getProyecto().getId()) : null);
+                    v.setProyectoId(a.getProyecto() != null ? safeParseLong(String.valueOf(a.getProyecto().getId())) : null);
                     v.setPdfUrl(a.getRutaArchivo());
                     v.setFechaEnvio(a.getFechaEnvio());
                     v.setEstado(a.getEstado());

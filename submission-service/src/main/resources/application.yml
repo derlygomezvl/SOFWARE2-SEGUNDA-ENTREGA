@@ -2,38 +2,37 @@ server:
   port: 8082
 
 spring:
-  application:
-    name: submission-service
   datasource:
     driver-class-name: org.sqlite.JDBC
     url: jdbc:sqlite:./data/submission_service.sqlite
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
 
+
   rabbitmq:
-    host: rabbitmq-local
-    port: 5672
-    username: guest
-    password: guest
+    host: disabled
+    port: 0
+    username: disabled
+    password: disabled
 
 jwt:
   secret: test-secret-key-for-jwt-validation-minimum-256-bits-long
   expiration: 86400000
 
 # Exchanges y routing keys que usa RabbitConfig
-submission:
-  exchanges:
-    formato-a: formato-a-exchange
-    anteproyecto: anteproyecto-exchange
-    proyecto: proyecto-exchange
-  routing:
-    formato-a-enviado: formato-a.enviado
-    formato-a-reenviado: formato-a.reenviado
-    anteproyecto-enviado: anteproyecto.enviado
-    proyecto-rechazo-def: proyecto.rechazado-definitivamente
+#submission:
+ # exchanges:
+  #  formato-a: formato-a-exchange
+   # anteproyecto: anteproyecto-exchange
+    #proyecto: proyecto-exchange
+  #routing:
+   # formato-a-enviado: formato-a.enviado
+    #formato-a-reenviado: formato-a.reenviado
+    #anteproyecto-enviado: anteproyecto.enviado
+    #proyecto-rechazo-def: proyecto.rechazado-definitivamente
 
 notification:
   base-url: http://localhost:8083/api/notifications
@@ -56,3 +55,13 @@ management:
         include: health,info,metrics
       base-path: /actuator
   endpoint.health.show-details: always
+
+  spring:
+    rabbitmq:
+      listener:
+        simple:
+          auto-startup: false
+        direct:
+          auto-startup: false
+      dynamic: false
+

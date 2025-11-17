@@ -58,7 +58,7 @@ public abstract class DocumentProcessingTemplate {
                     .success(true)
                     .message("Documento procesado exitosamente")
                     .documentId(documentId)
-                    .proyectoId(proyecto.getId())
+                    .proyectoId(String.valueOf(proyecto.getId()))
                     .estadoActual(proyecto.getEstado().getDescripcion())
                     .build();
 
@@ -71,7 +71,7 @@ public abstract class DocumentProcessingTemplate {
             return ProcessResult.builder()
                     .success(false)
                     .message("Error al procesar documento: " + e.getMessage())
-                    .proyectoId(proyecto.getId())
+                    .proyectoId(String.valueOf(proyecto.getId()))
                     .build();
         }
     }
