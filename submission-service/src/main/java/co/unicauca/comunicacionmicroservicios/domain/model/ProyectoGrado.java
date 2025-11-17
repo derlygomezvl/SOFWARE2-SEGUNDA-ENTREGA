@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class ProyectoGrado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Integer id;
     private String titulo;
     private ProjectStateEnum estado;
     private transient ProjectState state;
@@ -68,8 +68,8 @@ public class ProyectoGrado {
     }
 
     // Getters y Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
