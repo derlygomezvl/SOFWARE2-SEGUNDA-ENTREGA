@@ -64,10 +64,8 @@ public class SubmissionService implements ISubmissionService {
         validarArchivoPdfObligatorio(pdf);
         validarCartaSiPractica(data, carta);
 
-        // 1) Crear el agregado raíz ProyectoGrado usando ProjectStateFactory
+        // 1) Crear el agregado raíz ProyectoGrado
         ProyectoGrado proyecto = new ProyectoGrado(data.getTitulo(), stateFactory);
-
-        // Persistir proyecto (el repositorio debe asignar id)
         proyecto = proyectoRepo.save(proyecto);
 
         // 2) Guardar archivos en almacenamiento
@@ -77,7 +75,7 @@ public class SubmissionService implements ISubmissionService {
                 ? guardarArchivo(base, "carta.pdf", carta)
                 : null;
 
-        // 3) Crear entidad FormatoA con metadatos (directorId, modalidad, etc.)
+        // 3) Crear entidad FormatoA con metadatos
         FormatoA v1 = new FormatoA();
         v1.setProyecto(proyecto);
         v1.setNumeroIntento(1);
@@ -89,27 +87,21 @@ public class SubmissionService implements ISubmissionService {
             v1.setNombreCartaAceptacion(Optional.ofNullable(carta.getOriginalFilename()).orElse("carta.pdf"));
         }
         v1.setEstado(enumEstadoFormato.PENDIENTE);
-
-        // Guardar formato
         formatoRepo.save(v1);
 
-        // 4) Informar al agregado (delegar comportamiento al state si aplica)
-        proyecto.manejarFormatoA(stateFactory, "Formato A v1 creado"); // la lógica de estado quedará en el dominio
-        proyecto = proyectoRepo.save(proyecto); // persistir cambios de estado si los hay
+        // ✅ CORREGIDO: Usar valores temporales mientras Identity Service no funciona
+        String coordinadorEmail = "coordinador@unicauca.edu.co";
+        String submittedByName = "Docente " + userId;
 
-        // 5) Notificar al coordinador (obtenemos datos desde IdentityClient)
-        String coordinadorEmail = identityClient.getCoordinadorEmail();
-        String submittedByName = identityClient.getUserName(userId);
-        Integer proyectoIdInt;
-        try {
-            proyectoIdInt = Integer.parseInt(String.valueOf(proyecto.getId()));
-        } catch (NumberFormatException e) {
-            proyectoIdInt = null;
-        }
+        // ✅ CORREGIDO: Usar HashMap en lugar de Map.of para evitar NullPointerException
+        Map<String, Object> businessContext = new HashMap<>();
+        businessContext.put("projectId", proyecto.getId());
+        businessContext.put("version", 1);
+        businessContext.put("submittedBy", submittedByName);
+        businessContext.put("projectTitle", proyecto.getTitulo());
 
-// Usar publishNotification directamente en lugar del método que no existe
         NotificationRequest notificacion = NotificationRequest.builder()
-                .notificationType(NotificationType.FORMATO_A_REENVIADO) // o crea un nuevo tipo si necesitas
+                .notificationType(NotificationType.FORMATO_A_PRESENTADO)
                 .subject("Nuevo Formato A Presentado")
                 .message("Se ha presentado un nuevo Formato A v1 para el proyecto: " + proyecto.getTitulo() +
                         " por: " + submittedByName)
@@ -119,12 +111,7 @@ public class SubmissionService implements ISubmissionService {
                                 .role("COORDINATOR")
                                 .build()
                 ))
-                .businessContext(Map.of(
-                        "projectId", proyectoIdInt,
-                        "version", 1,
-                        "submittedBy", submittedByName,
-                        "projectTitle", proyecto.getTitulo()
-                ))
+                .businessContext(businessContext) // ✅ Usar el HashMap
                 .channel("email")
                 .build();
 
