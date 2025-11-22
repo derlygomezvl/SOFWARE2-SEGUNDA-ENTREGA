@@ -94,7 +94,7 @@ public class SubmissionService implements ISubmissionService {
         formatoRepo.save(v1);
 
         // 4) Informar al agregado (delegar comportamiento al state si aplica)
-        proyecto.manejarFormatoA("Formato A v1 creado"); // la lógica de estado quedará en el dominio
+        proyecto.manejarFormatoA(stateFactory, "Formato A v1 creado"); // la lógica de estado quedará en el dominio
         proyecto = proyectoRepo.save(proyecto); // persistir cambios de estado si los hay
 
         // 5) Notificar al coordinador (obtenemos datos desde IdentityClient)
@@ -216,7 +216,7 @@ public class SubmissionService implements ISubmissionService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no existe"));
 
         // Preguntamos al dominio si permite reenvío
-        if (!proyecto.permiteReenvioFormatoA()) {
+        if (!proyecto.permiteReenvioFormatoA(stateFactory)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El proyecto no permite reenvío de Formato A");
         }
 
@@ -247,7 +247,7 @@ public class SubmissionService implements ISubmissionService {
         formatoRepo.save(nueva);
 
         // Delegar evento al dominio
-        proyecto.manejarFormatoA("Formato A reenviado v" + next);
+        proyecto.manejarFormatoA(stateFactory, "Formato A reenviado v" + next);
         proyecto = proyectoRepo.save(proyecto);
 
         // Notificar usando el método publishNotification directamente
@@ -295,7 +295,7 @@ public class SubmissionService implements ISubmissionService {
         ProyectoGrado proyecto = formato.getProyecto();
 
         // Delegamos la evaluación al agregado raíz (manejo del estado)
-        proyecto.evaluarFormatoA(req.getEstado().name(), req.getObservaciones());
+        proyecto.evaluarFormatoA(stateFactory, req.getEstado().name(), req.getObservaciones());
         proyecto = proyectoRepo.save(proyecto);
 
         // Actualizamos la entidad FormatoA
@@ -307,7 +307,7 @@ public class SubmissionService implements ISubmissionService {
         formatoRepo.save(formato);
 
         // Si el dominio derivó a rechazo definitivo (no permite más reenvíos)
-        if (!proyecto.permiteReenvioFormatoA()) {
+        if (!proyecto.permiteReenvioFormatoA(stateFactory)) {
             notificationPublisher.notificarRechazoDefinitivoFormatoA(proyecto);
         }
     }
@@ -336,7 +336,7 @@ public class SubmissionService implements ISubmissionService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no existe"));
 
         // Delegar verificación de permisos al dominio si implementado
-        if (!proyecto.permiteSubirAnteproyecto()) {
+        if (!proyecto.permiteSubirAnteproyecto(stateFactory)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "No puede subir anteproyecto en el estado actual");
         }
 
@@ -352,7 +352,7 @@ public class SubmissionService implements ISubmissionService {
         anteproyectoRepo.save(ant);
 
         // Delegar al dominio
-        proyecto.manejarAnteproyecto("Anteproyecto presentado");
+        proyecto.manejarAnteproyecto(stateFactory, "Anteproyecto presentado");
         proyecto = proyectoRepo.save(proyecto);
 
         // Notificar jefe de departamento

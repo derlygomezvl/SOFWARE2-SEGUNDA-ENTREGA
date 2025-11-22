@@ -2,6 +2,7 @@ package co.unicauca.comunicacionmicroservicios.service.template;
 
 import co.unicauca.comunicacionmicroservicios.domain.model.ProyectoGrado;
 import co.unicauca.comunicacionmicroservicios.domain.enums.ProjectStateEnum;
+import co.unicauca.comunicacionmicroservicios.domain.state.ProjectStateFactory;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationRequest;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationType;
 import co.unicauca.comunicacionmicroservicios.dto.Recipient;
@@ -17,8 +18,13 @@ import java.util.Map;
 @Component
 public class FormatoACorregidoProcessingTemplate extends DocumentProcessingTemplate {
 
-    public FormatoACorregidoProcessingTemplate(NotificationPublisher notificationPublisher) {
+    private final ProjectStateFactory stateFactory;
+
+    // ✅ CORREGIDO: Inyectar ProjectStateFactory
+    public FormatoACorregidoProcessingTemplate(NotificationPublisher notificationPublisher,
+                                               ProjectStateFactory stateFactory) {
         super(notificationPublisher);
+        this.stateFactory = stateFactory;
     }
 
     @Override
@@ -55,6 +61,11 @@ public class FormatoACorregidoProcessingTemplate extends DocumentProcessingTempl
             );
         }
 
+        // ✅ CORREGIDO: Pasar stateFactory al método de consulta
+        if (!proyecto.permiteReenvioFormatoA(stateFactory)) {
+            throw new IllegalStateException("No se puede reenviar Formato A en el estado actual");
+        }
+
         // Verificar intentos máximos
         if (proyecto.getIntentosFormatoA() >= 3) {
             throw new IllegalStateException("Límite de intentos excedido. Proyecto cancelado.");
@@ -79,11 +90,8 @@ public class FormatoACorregidoProcessingTemplate extends DocumentProcessingTempl
     protected void actualizarEstadoProyecto(ProyectoGrado proyecto) {
         logger.info("Actualizando estado del proyecto después de Formato A corregido...");
 
-        // Incrementar contador de intentos
-        proyecto.incrementarIntentos();
-
-        // Volver a estado de evaluación
-        proyecto.setEstado(ProjectStateEnum.FORMATO_A_EN_EVALUACION);
+        // ✅ CORREGIDO: Pasar stateFactory al método de dominio
+        proyecto.manejarFormatoA(stateFactory, "Formato A corregido reenviado");
 
         logger.info("Estado actualizado a: {}, Intento: {}",
                 proyecto.getEstado().getDescripcion(), proyecto.getIntentosFormatoA());

@@ -25,8 +25,8 @@ public class ProjectStateService {
             ProyectoGrado proyecto = proyectoRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Proyecto no encontrado: " + proyectoId));
 
-            // Inicializar el estado del proyecto
-            proyecto.initializeState(stateFactory);
+            // ✅ CORREGIDO: Ya no necesitamos initializeState porque eliminamos los campos transient
+            // El estado se maneja directamente a través de los métodos que reciben stateFactory
             return proyecto;
 
         } catch (NumberFormatException e) {
@@ -34,42 +34,71 @@ public class ProjectStateService {
         }
     }
 
+    // ✅ CORREGIDO: Métodos actualizados para pasar stateFactory
+
     public void manejarFormatoA(String proyectoId, String contenido) {
         ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
-        proyecto.manejarFormatoA(contenido);
+        proyecto.manejarFormatoA(stateFactory, contenido);
         proyectoRepository.save(proyecto);
     }
 
     public void manejarAnteproyecto(String proyectoId, String contenido) {
         ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
-        proyecto.manejarAnteproyecto(contenido);
+        proyecto.manejarAnteproyecto(stateFactory, contenido);
         proyectoRepository.save(proyecto);
     }
 
     public void evaluarFormatoA(String proyectoId, String decision, String observaciones) {
         ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
-        proyecto.evaluarFormatoA(decision, observaciones);
+        proyecto.evaluarFormatoA(stateFactory, decision, observaciones);
         proyectoRepository.save(proyecto);
     }
 
     public void evaluarAnteproyecto(String proyectoId, String decision, String observaciones) {
         ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
-        proyecto.evaluarAnteproyecto(decision, observaciones);
+        proyecto.evaluarAnteproyecto(stateFactory, decision, observaciones);
         proyectoRepository.save(proyecto);
     }
 
     public boolean puedeAvanzar(String proyectoId) {
         ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
-        return proyecto.puedeAvanzar();
+        return proyecto.puedeAvanzar(stateFactory);
     }
 
     public boolean permiteReenvioFormatoA(String proyectoId) {
         ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
-        return proyecto.permiteReenvioFormatoA();
+        return proyecto.permiteReenvioFormatoA(stateFactory);
     }
 
     public boolean permiteSubirAnteproyecto(String proyectoId) {
         ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
-        return proyecto.permiteSubirAnteproyecto();
+        return proyecto.permiteSubirAnteproyecto(stateFactory);
+    }
+
+    // ✅ MÉTODOS ADICIONALES ÚTILES
+
+    public ProyectoGrado cambiarEstadoProyecto(String proyectoId, String nuevoEstado) {
+        ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
+
+        // Convertir String a enum (necesitarías un método helper para esto)
+        // proyecto.setEstado(convertirStringAEstado(nuevoEstado));
+
+        return proyectoRepository.save(proyecto);
+    }
+
+    public String obtenerEstadoActual(String proyectoId) {
+        ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
+        return proyecto.getEstado().name();
+    }
+
+    public int obtenerIntentosFormatoA(String proyectoId) {
+        ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
+        return proyecto.getIntentosFormatoA();
+    }
+
+    public boolean estaEnEstadoFinal(String proyectoId) {
+        ProyectoGrado proyecto = obtenerProyectoConEstado(proyectoId);
+        return proyecto.getEstado().name().contains("FINALIZADO") ||
+                proyecto.getEstado().name().contains("CANCELADO");
     }
 }

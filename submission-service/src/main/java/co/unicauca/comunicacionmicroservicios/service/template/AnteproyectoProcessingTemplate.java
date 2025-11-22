@@ -2,6 +2,7 @@ package co.unicauca.comunicacionmicroservicios.service.template;
 
 import co.unicauca.comunicacionmicroservicios.domain.model.ProyectoGrado;
 import co.unicauca.comunicacionmicroservicios.domain.enums.ProjectStateEnum;
+import co.unicauca.comunicacionmicroservicios.domain.state.ProjectStateFactory;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationRequest;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationType;
 import co.unicauca.comunicacionmicroservicios.dto.Recipient;
@@ -17,8 +18,13 @@ import java.util.Map;
 @Component
 public class AnteproyectoProcessingTemplate extends DocumentProcessingTemplate {
 
-    public AnteproyectoProcessingTemplate(NotificationPublisher notificationPublisher) {
+    private final ProjectStateFactory stateFactory;
+
+    // ✅ CORREGIDO: Inyectar ProjectStateFactory
+    public AnteproyectoProcessingTemplate(NotificationPublisher notificationPublisher,
+                                          ProjectStateFactory stateFactory) {
         super(notificationPublisher);
+        this.stateFactory = stateFactory;
     }
 
     @Override
@@ -62,8 +68,8 @@ public class AnteproyectoProcessingTemplate extends DocumentProcessingTemplate {
             );
         }
 
-        // Verificar que permita subir anteproyecto
-        if (!proyecto.permiteSubirAnteproyecto()) {
+        // ✅ CORREGIDO: Pasar stateFactory al método de consulta
+        if (!proyecto.permiteSubirAnteproyecto(stateFactory)) {
             throw new IllegalStateException("El proyecto no permite subir anteproyecto en este momento");
         }
 
@@ -87,8 +93,8 @@ public class AnteproyectoProcessingTemplate extends DocumentProcessingTemplate {
     protected void actualizarEstadoProyecto(ProyectoGrado proyecto) {
         logger.info("Actualizando estado del proyecto después de Anteproyecto...");
 
-        // Usar el State Pattern para manejar el estado
-        proyecto.manejarAnteproyecto("Anteproyecto presentado");
+        // ✅ CORREGIDO: Pasar stateFactory al método de dominio
+        proyecto.manejarAnteproyecto(stateFactory, "Anteproyecto presentado");
 
         logger.info("Estado actualizado a: {}", proyecto.getEstado().getDescripcion());
     }

@@ -2,13 +2,15 @@ package co.unicauca.comunicacionmicroservicios.service.template;
 
 import co.unicauca.comunicacionmicroservicios.domain.model.ProyectoGrado;
 import co.unicauca.comunicacionmicroservicios.domain.enums.ProjectStateEnum;
+import co.unicauca.comunicacionmicroservicios.domain.state.ProjectStateFactory;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationRequest;
 import co.unicauca.comunicacionmicroservicios.dto.NotificationType;
 import co.unicauca.comunicacionmicroservicios.dto.Recipient;
 import co.unicauca.comunicacionmicroservicios.service.NotificationPublisher;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Map;
-import org.springframework.stereotype.Component;
 
 /**
  * Implementación concreta del Template Method para procesar Formato A
@@ -16,8 +18,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class FormatoAProcessingTemplate extends DocumentProcessingTemplate {
 
-    public FormatoAProcessingTemplate(NotificationPublisher notificationPublisher) {
+    private final ProjectStateFactory stateFactory;
+
+    // ✅ CORREGIDO: Inyectar ProjectStateFactory en el constructor
+    public FormatoAProcessingTemplate(NotificationPublisher notificationPublisher,
+                                      ProjectStateFactory stateFactory) {
         super(notificationPublisher);
+        this.stateFactory = stateFactory;
     }
 
     @Override
@@ -60,8 +67,8 @@ public class FormatoAProcessingTemplate extends DocumentProcessingTemplate {
     protected void validarEstadoProyecto(ProyectoGrado proyecto) {
         logger.info("Validando estado del proyecto para Formato A...");
 
-        // Verificar que el proyecto permita subir Formato A
-        if (!proyecto.permiteReenvioFormatoA() && proyecto.getEstado() != ProjectStateEnum.FORMATO_A_PRESENTADO) {
+        // ✅ CORREGIDO: Pasar stateFactory al método de consulta
+        if (!proyecto.permiteReenvioFormatoA(stateFactory) && proyecto.getEstado() != ProjectStateEnum.FORMATO_A_PRESENTADO) {
             throw new IllegalStateException(
                     "El proyecto no permite subir Formato A en el estado actual: " +
                             proyecto.getEstado().getDescripcion()
@@ -94,8 +101,8 @@ public class FormatoAProcessingTemplate extends DocumentProcessingTemplate {
     protected void actualizarEstadoProyecto(ProyectoGrado proyecto) {
         logger.info("Actualizando estado del proyecto después de Formato A...");
 
-        // Usar el State Pattern para manejar el estado
-        proyecto.manejarFormatoA("Formato A presentado - " + proyecto.getTitulo());
+        // ✅ CORREGIDO: Pasar stateFactory al método de dominio
+        proyecto.manejarFormatoA(stateFactory, "Formato A presentado - " + proyecto.getTitulo());
 
         logger.info("Estado actualizado a: {}", proyecto.getEstado().getDescripcion());
     }
@@ -121,8 +128,8 @@ public class FormatoAProcessingTemplate extends DocumentProcessingTemplate {
                 .recipients(List.of(
                         Recipient.builder()
                                 .email("coordinador@unicauca.edu.co")
-                                .role("COORDINATOR") // opcional: ajusta el role si lo necesitas
-                                .name("Coordinador") // opcional
+                                .role("COORDINATOR")
+                                .name("Coordinador")
                                 .build()
                 ))
                 .businessContext(Map.of(
@@ -132,7 +139,7 @@ public class FormatoAProcessingTemplate extends DocumentProcessingTemplate {
                         "modalidad", documentData.getModalidad(),
                         "intento", proyecto.getIntentosFormatoA()
                 ))
-                .channel("email") // asegúrate de definir el channel si tu builder lo requiere
+                .channel("email")
                 .build();
     }
 
