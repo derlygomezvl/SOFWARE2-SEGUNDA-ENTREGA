@@ -21,7 +21,7 @@ public class AnteproyectoRechazadoState implements ProjectState {
     public void manejarAnteproyecto(ProyectoGrado proyecto, String contenido) {
         // Permite reenviar el anteproyecto después de rechazo
         proyecto.setEstado(ProjectStateEnum.ANTEPROYECTO_PRESENTADO);
-        notificationPublisher.notificarReenvioAnteproyecto(proyecto);
+        //notificationPublisher.notificarReenvioAnteproyecto(proyecto);
     }
 
     @Override

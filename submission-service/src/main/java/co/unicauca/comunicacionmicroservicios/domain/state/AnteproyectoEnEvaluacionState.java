@@ -31,10 +31,10 @@ public class AnteproyectoEnEvaluacionState implements ProjectState {
     public void evaluarAnteproyecto(ProyectoGrado proyecto, String decision, String observaciones) {
         if ("APROBADO".equalsIgnoreCase(decision)) {
             proyecto.setEstado(ProjectStateEnum.ANTEPROYECTO_ACEPTADO);
-            notificationPublisher.notificarAprobacionAnteproyecto(proyecto);
+            //notificationPublisher.notificarAprobacionAnteproyecto(proyecto);
         } else if ("RECHAZADO".equalsIgnoreCase(decision)) {
             proyecto.setEstado(ProjectStateEnum.ANTEPROYECTO_RECHAZADO);
-            notificationPublisher.notificarRechazoAnteproyecto(proyecto, observaciones);
+            //notificationPublisher.notificarRechazoAnteproyecto(proyecto, observaciones);
         } else {
             throw new IllegalArgumentException("Decisión no válida: " + decision);
         }

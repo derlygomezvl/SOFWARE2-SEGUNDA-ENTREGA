@@ -26,14 +26,14 @@ public class FormatoAEnEvaluacionState implements ProjectState {
     public void evaluarFormatoA(ProyectoGrado proyecto, String decision, String observaciones) {
         if ("APROBADO".equalsIgnoreCase(decision)) {
             proyecto.setEstado(ProjectStateEnum.FORMATO_A_ACEPTADO);
-            notificationPublisher.notificarAprobacionFormatoA(proyecto);
+            //notificationPublisher.notificarAprobacionFormatoA(proyecto);
         } else if ("RECHAZADO".equalsIgnoreCase(decision)) {
             proyecto.setEstado(ProjectStateEnum.FORMATO_A_RECHAZADO);
             proyecto.incrementarIntentos();
-            notificationPublisher.notificarRechazoFormatoA(proyecto, observaciones);
+            //notificationPublisher.notificarRechazoFormatoA(proyecto, observaciones);
         } else if ("CORRECCIONES".equalsIgnoreCase(decision)) {
             proyecto.setEstado(ProjectStateEnum.FORMATO_A_CORRECCIONES);
-            notificationPublisher.notificarCorreccionesFormatoA(proyecto, observaciones);
+            //notificationPublisher.notificarCorreccionesFormatoA(proyecto, observaciones);
         } else {
             throw new IllegalArgumentException("Decisión no válida: " + decision);
         }

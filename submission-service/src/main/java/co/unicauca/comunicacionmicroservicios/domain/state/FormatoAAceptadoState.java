@@ -21,7 +21,7 @@ public class FormatoAAceptadoState implements ProjectState  {
     public void manejarAnteproyecto(ProyectoGrado proyecto, String contenido) {
         // Permite subir el anteproyecto ahora que el formato A está aceptado
         proyecto.setEstado(ProjectStateEnum.ANTEPROYECTO_PRESENTADO);
-        notificationPublisher.notificarAnteproyectoPresentado(proyecto);
+        //notificationPublisher.notificarAnteproyectoPresentado(proyecto);
     }
 
     @Override

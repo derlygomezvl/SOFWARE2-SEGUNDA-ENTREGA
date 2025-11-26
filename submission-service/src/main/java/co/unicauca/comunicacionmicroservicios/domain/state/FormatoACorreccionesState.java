@@ -16,7 +16,7 @@ public class FormatoACorreccionesState implements ProjectState {
     public void manejarFormatoA(ProyectoGrado proyecto, String contenido) {
         // Permite reenviar el formato A con correcciones
         proyecto.setEstado(ProjectStateEnum.FORMATO_A_EN_EVALUACION);
-        notificationPublisher.notificarReenvioFormatoA(proyecto);
+        //notificationPublisher.notificarReenvioFormatoA(proyecto);
     }
 
     @Override

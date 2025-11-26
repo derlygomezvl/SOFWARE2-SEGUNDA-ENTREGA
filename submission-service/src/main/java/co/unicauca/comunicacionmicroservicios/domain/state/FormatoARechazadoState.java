@@ -21,7 +21,7 @@ public class FormatoARechazadoState implements ProjectState {
         }
 
         proyecto.setEstado(ProjectStateEnum.FORMATO_A_PRESENTADO);
-        notificationPublisher.notificarReenvioFormatoA(proyecto);
+        //notificationPublisher.notificarReenvioFormatoA(proyecto);
     }
 
     @Override
