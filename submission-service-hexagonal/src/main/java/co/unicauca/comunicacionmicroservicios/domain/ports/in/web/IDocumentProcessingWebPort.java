@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * @author javiersolanop777
  */
-public interface DocumentProcessingWebPort {
+public interface IDocumentProcessingWebPort {
 
     @PostMapping("/proyecto/{proyectoId}/procesar")
 //    @Operation(summary = "Procesar documento usando Template Method Pattern")

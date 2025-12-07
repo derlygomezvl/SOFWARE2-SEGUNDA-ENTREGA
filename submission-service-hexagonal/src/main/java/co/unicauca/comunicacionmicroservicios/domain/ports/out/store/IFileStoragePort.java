@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * Interfaz para el servicio de almacenamiento de archivos.
  */
-public interface IFileStorage {
+public interface IFileStoragePort {
 
     /**
      * Guarda un archivo en el sistema de archivos.

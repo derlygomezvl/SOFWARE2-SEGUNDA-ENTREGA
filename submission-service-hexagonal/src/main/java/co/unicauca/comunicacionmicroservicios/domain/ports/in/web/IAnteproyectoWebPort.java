@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * @author javiersolanop777
  */
-public interface AnteproyectoWebPort {
+public interface IAnteproyectoWebPort {
 
     /**
      * RF6 — Subir anteproyecto.

@@ -4,7 +4,7 @@ import co.unicauca.comunicacionmicroservicios.application.dto.AnteproyectoReques
 import co.unicauca.comunicacionmicroservicios.application.dto.DocumentProcessingRequestDTO;
 import co.unicauca.comunicacionmicroservicios.application.dto.FormatoACorregidoRequestDTO;
 import co.unicauca.comunicacionmicroservicios.application.dto.FormatoARequestDTO;
-import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.DocumentProcessingWebPort;
+import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.IDocumentProcessingWebPort;
 import co.unicauca.comunicacionmicroservicios.domain.services.DocumentProcessingService;
 import co.unicauca.comunicacionmicroservicios.domain.services.ProjectStateService;
 import co.unicauca.comunicacionmicroservicios.domain.services.template.DocumentData;
@@ -17,7 +17,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/documents")
 //@Tag(name = "Document Processing", description = "API para procesamiento de documentos usando State y Template Method patterns")
-public class DocumentProcessingController implements DocumentProcessingWebPort {
+public class DocumentProcessingController implements IDocumentProcessingWebPort {
 
     private final DocumentProcessingService documentProcessingService;
     private final ProjectStateService projectStateService;

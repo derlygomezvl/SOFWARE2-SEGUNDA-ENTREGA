@@ -1,7 +1,7 @@
 package co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in.web;
 
 import co.unicauca.comunicacionmicroservicios.application.dto.*;
-import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.FormatoAWebPort;
+import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.IFormatoAWebPort;
 import co.unicauca.comunicacionmicroservicios.domain.services.SubmissionService;
 import co.unicauca.comunicacionmicroservicios.infrastructure.util.SecurityRules;
 import org.springframework.http.HttpStatus;
@@ -22,7 +22,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api/submissions/formatoA")
-public class FormatoAController implements FormatoAWebPort {
+public class FormatoAController implements IFormatoAWebPort {
 
     private final SubmissionService service;
 

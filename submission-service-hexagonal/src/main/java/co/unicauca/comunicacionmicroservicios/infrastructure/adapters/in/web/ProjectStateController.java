@@ -1,6 +1,6 @@
 package co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in.web;
 
-import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.ProjectStateWebPort;
+import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.IProjectStateWebPort;
 import co.unicauca.comunicacionmicroservicios.domain.services.ProjectStateService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/project-state")
-public class ProjectStateController implements ProjectStateWebPort {
+public class ProjectStateController implements IProjectStateWebPort {
 
     private final ProjectStateService projectStateService;
 

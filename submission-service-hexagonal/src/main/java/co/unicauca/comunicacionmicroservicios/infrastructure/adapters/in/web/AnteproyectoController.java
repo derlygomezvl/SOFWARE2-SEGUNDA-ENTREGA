@@ -1,7 +1,7 @@
 package co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in.web;
 
 import co.unicauca.comunicacionmicroservicios.application.dto.*;
-import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.AnteproyectoWebPort;
+import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.IAnteproyectoWebPort;
 import co.unicauca.comunicacionmicroservicios.infrastructure.util.SecurityRules;
 import co.unicauca.comunicacionmicroservicios.domain.services.SubmissionService;
 import org.springframework.http.*;
@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @RestController
 @RequestMapping("/api/submissions/anteproyecto")
-public class AnteproyectoController implements AnteproyectoWebPort {
+public class AnteproyectoController implements IAnteproyectoWebPort {
 
     private final SubmissionService service;
 

@@ -9,12 +9,12 @@ package co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in.web;
  * Los endpoints principales están en FormatoAController y AnteproyectoController.
  */
 
-import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.SubmissionWebPort;
+import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.ISubmissionWebPort;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/submissions")
-public class SubmissionController implements SubmissionWebPort {
+public class SubmissionController implements ISubmissionWebPort {
 
     @Override
     public String health()

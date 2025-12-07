@@ -1,6 +1,6 @@
 package co.unicauca.comunicacionmicroservicios.infrastructure.adapters.out.store;
 
-import co.unicauca.comunicacionmicroservicios.domain.ports.out.store.IFileStorage;
+import co.unicauca.comunicacionmicroservicios.domain.ports.out.store.IFileStoragePort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ import java.nio.file.*;
  * └── anteproyectos/{proyectoId}/documento.pdf
  */
 @Service
-public class FileStorage implements IFileStorage {
+public class FileStorage implements IFileStoragePort {
 
     private static final Logger log = LoggerFactory.getLogger(FileStorage.class);
 

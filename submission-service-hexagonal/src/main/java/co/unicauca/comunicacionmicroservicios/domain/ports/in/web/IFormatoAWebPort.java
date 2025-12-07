@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * @author javiersolanop777
  */
-public interface FormatoAWebPort {
+public interface IFormatoAWebPort {
 
     /**
      * RF2 — Crear Formato A inicial.

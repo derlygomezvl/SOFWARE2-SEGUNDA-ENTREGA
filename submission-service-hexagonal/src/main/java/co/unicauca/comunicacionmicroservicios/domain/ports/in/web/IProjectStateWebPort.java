@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * @author javiersolanop777
  */
-public interface ProjectStateWebPort {
+public interface IProjectStateWebPort {
 
     @PostMapping("/{proyectoId}/formato-a")
     public ResponseEntity<Map<String, String>> manejarFormatoA(

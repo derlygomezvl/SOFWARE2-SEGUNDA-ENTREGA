@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 /**
  * @author javiersolanop777
  */
-public interface PingWebPort {
+public interface ISubmissionWebPort {
 
-    @GetMapping("/ping")
-    public String ping();
+    @GetMapping("/health")
+    public String health();
 }
