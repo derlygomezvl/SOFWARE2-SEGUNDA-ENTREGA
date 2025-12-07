@@ -1,7 +1,7 @@
 package co.unicauca.comunicacionmicroservicios.domain.state;
 
 import co.unicauca.comunicacionmicroservicios.domain.enums.ProjectStateEnum;
-import co.unicauca.comunicacionmicroservicios.service.NotificationPublisher;
+import co.unicauca.comunicacionmicroservicios.infrastructure.adapters.out.events.NotificationPublisher;
 import org.springframework.stereotype.Component;
 
 @Component

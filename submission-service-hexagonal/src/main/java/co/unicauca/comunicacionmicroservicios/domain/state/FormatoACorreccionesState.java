@@ -2,7 +2,7 @@ package co.unicauca.comunicacionmicroservicios.domain.state;
 
 import co.unicauca.comunicacionmicroservicios.domain.model.ProyectoGrado;
 import co.unicauca.comunicacionmicroservicios.domain.enums.ProjectStateEnum;
-import co.unicauca.comunicacionmicroservicios.service.NotificationPublisher;
+import co.unicauca.comunicacionmicroservicios.infrastructure.adapters.out.events.NotificationPublisher;
 
 public class FormatoACorreccionesState implements ProjectState {
 

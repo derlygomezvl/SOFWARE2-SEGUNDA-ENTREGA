@@ -11,7 +11,6 @@ package co.unicauca.comunicacionmicroservicios.domain.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import co.unicauca.comunicacionmicroservicios.domain.model.*;
 
 @Entity
 @Table(name = "formatos_a")

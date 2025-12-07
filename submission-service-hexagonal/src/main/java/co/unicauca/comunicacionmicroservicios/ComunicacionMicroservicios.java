@@ -5,9 +5,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@SpringBootApplication(scanBasePackages = "co.unicauca.comunicacionmicroservicios")
-@EnableJpaRepositories(basePackages = "co.unicauca.comunicacionmicroservicios.infraestructure.repository")
-@EntityScan(basePackages = "co.unicauca.comunicacionmicroservicios.domain.model")
+@SpringBootApplication(
+    scanBasePackages = "co.unicauca.comunicacionmicroservicios"
+)
+@EnableJpaRepositories(
+    basePackages = "co.unicauca.comunicacionmicroservicios.infrastructure.adapters.out.db.repository"
+)
+@EntityScan(
+    basePackages = "co.unicauca.comunicacionmicroservicios.domain.model"
+)
 public class ComunicacionMicroservicios {
     
     public static void main(String[] args) 
