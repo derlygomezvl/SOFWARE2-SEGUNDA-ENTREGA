@@ -8,7 +8,7 @@ import java.util.List;
  * Datos JSON para crear el Formato A inicial (RF2).
  * Los archivos van en otras partes del multipart: pdf (obligatorio), carta (si PRACTICA_PROFESIONAL).
  */
-public class FormatoAData {
+public class FormatoADataDTO {
 
     @NotBlank
     @Size(max = 300)

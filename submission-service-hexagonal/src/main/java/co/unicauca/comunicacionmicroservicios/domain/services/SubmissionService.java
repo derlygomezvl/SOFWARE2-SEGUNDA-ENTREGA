@@ -1,9 +1,8 @@
-package co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in;
+package co.unicauca.comunicacionmicroservicios.domain.services;
 
 import co.unicauca.comunicacionmicroservicios.domain.model.*;
-import co.unicauca.comunicacionmicroservicios.domain.ports.in.ISubmissionPort;
-import co.unicauca.comunicacionmicroservicios.infrastructure.adapters.out.events.NotificationPublisher;
-import co.unicauca.comunicacionmicroservicios.infrastructure.adapters.out.clients.IdentityClient;
+import co.unicauca.comunicacionmicroservicios.domain.ports.out.clients.IIdentityClientPort;
+import co.unicauca.comunicacionmicroservicios.domain.ports.out.events.INotificationPublisherPort;
 import co.unicauca.comunicacionmicroservicios.infrastructure.adapters.out.db.repository.IAnteproyectoRepository;
 import co.unicauca.comunicacionmicroservicios.infrastructure.adapters.out.db.repository.IFormatoARepository;
 import co.unicauca.comunicacionmicroservicios.infrastructure.adapters.out.db.repository.IProyectoGradoRepository;
@@ -13,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,27 +30,27 @@ import java.util.stream.Collectors;
  * - Asume que ProyectoGrado se construye con (titulo, ProjectStateFactory).
  * - No intenta escribir campos inexistentes en ProyectoGrado; esos metadatos se guardan en FormatoA/Anteproyecto.
  */
-@Component
-public class Submission implements ISubmissionPort {
+@Service
+public class SubmissionService {
 
-    private static final Logger log = LoggerFactory.getLogger(Submission.class);
+    private static final Logger log = LoggerFactory.getLogger(SubmissionService.class);
 
     private final IProyectoGradoRepository proyectoRepo;
     private final IFormatoARepository formatoRepo;
     private final IAnteproyectoRepository anteproyectoRepo;
-    private final NotificationPublisher notificationPublisher;
-    private final IdentityClient identityClient;
+    private final INotificationPublisherPort notificationPublisher;
+    private final IIdentityClientPort identityClient;
     private final ProjectStateFactory stateFactory;
 
     @Value("${file.storage.path:/app/uploads}")
     private String storageBasePath;
 
-    public Submission(IProyectoGradoRepository proyectoRepo,
-                      IFormatoARepository formatoRepo,
-                      IAnteproyectoRepository anteproyectoRepo,
-                      NotificationPublisher notificationPublisher,
-                      IdentityClient identityClient,
-                      ProjectStateFactory stateFactory) {
+    public SubmissionService(IProyectoGradoRepository proyectoRepo,
+                             IFormatoARepository formatoRepo,
+                             IAnteproyectoRepository anteproyectoRepo,
+                             INotificationPublisherPort notificationPublisher,
+                             IIdentityClientPort identityClient,
+                             ProjectStateFactory stateFactory) {
         this.proyectoRepo = proyectoRepo;
         this.formatoRepo = formatoRepo;
         this.anteproyectoRepo = anteproyectoRepo;
@@ -63,9 +62,8 @@ public class Submission implements ISubmissionPort {
     // ---------------------------
     // RF2: Crear Formato A v1
     // ---------------------------
-    @Override
     @Transactional
-    public IdResponse crearFormatoA(String userId, FormatoAData data, MultipartFile pdf, MultipartFile carta) {
+    public IdResponseDTO crearFormatoA(String userId, FormatoADataDTO data, MultipartFile pdf, MultipartFile carta) {
         validarArchivoPdfObligatorio(pdf);
         validarCartaSiPractica(data, carta);
 
@@ -123,19 +121,18 @@ public class Submission implements ISubmissionPort {
         log.info("Formato A v1 creado para proyecto {} - Notificación enviada al coordinador: {}",
                 proyecto.getId(), coordinadorEmail);
 
-        return new IdResponse(parseLongSafeStringId(String.valueOf(proyecto.getId())));
+        return new IdResponseDTO(parseLongSafeStringId(String.valueOf(proyecto.getId())));
     }
 
     // ---------------------------
     // Lecturas de Formato A
     // ---------------------------
-    @Override
     @Transactional(readOnly = true)
-    public FormatoAView obtenerFormatoA(Long id) {
+    public FormatoAViewDTO obtenerFormatoA(Long id) {
         FormatoA fa = formatoRepo.findById(id.intValue())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Formato A no encontrado"));
 
-        FormatoAView view = new FormatoAView();
+        FormatoAViewDTO view = new FormatoAViewDTO();
         view.setId(fa.getId().longValue());
         view.setProyectoId(fa.getProyecto() != null ? safeParseLong(String.valueOf(fa.getProyecto().getId())) : null);
         view.setVersion(fa.getNumeroIntento());
@@ -148,10 +145,9 @@ public class Submission implements ISubmissionPort {
         return view;
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public FormatoAPage listarFormatoA(Optional<String> docenteId, int page, int size) {
-        List<FormatoAView> content = formatoRepo.findAll().stream()
+    public FormatoAPageDTO listarFormatoA(Optional<String> docenteId, int page, int size) {
+        List<FormatoAViewDTO> content = formatoRepo.findAll().stream()
                 .filter(fa -> {
                     if (docenteId.isEmpty()) return true;
                     // Si FormatoA guarda directorId como Integer, comparamos con seguridad
@@ -165,7 +161,7 @@ public class Submission implements ISubmissionPort {
                 .sorted(Comparator.comparing(FormatoA::getFechaCarga).reversed())
                 .limit(size)
                 .map(fa -> {
-                    FormatoAView v = new FormatoAView();
+                    FormatoAViewDTO v = new FormatoAViewDTO();
                     v.setId(fa.getId().longValue());
                     v.setProyectoId(fa.getProyecto() != null ? safeParseLong(String.valueOf(fa.getProyecto().getId())) : null);
                     v.setVersion(fa.getNumeroIntento());
@@ -177,7 +173,7 @@ public class Submission implements ISubmissionPort {
                     return v;
                 }).collect(Collectors.toList());
 
-        FormatoAPage res = new FormatoAPage();
+        FormatoAPageDTO res = new FormatoAPageDTO();
         res.setContent(content);
         res.setPage(page);
         res.setSize(size);
@@ -188,9 +184,8 @@ public class Submission implements ISubmissionPort {
     // ---------------------------
     // RF4: Reenviar Formato A
     // ---------------------------
-    @Override
     @Transactional
-    public IdResponse reenviarFormatoA(String userId, Long proyectoId, MultipartFile pdf, MultipartFile carta) {
+    public IdResponseDTO reenviarFormatoA(String userId, Long proyectoId, MultipartFile pdf, MultipartFile carta) {
         validarArchivoPdfObligatorio(pdf);
 
         // CORRECCIÓN: Convertir Long a Integer
@@ -270,15 +265,14 @@ public class Submission implements ISubmissionPort {
         log.info("Formato A v{} reenviado para proyecto {} - Notificación enviada al coordinador: {}",
                 next, proyecto.getId(), coordinadorEmail);
 
-        return new IdResponse(parseLongSafeStringId(String.valueOf(proyecto.getId())));
+        return new IdResponseDTO(parseLongSafeStringId(String.valueOf(proyecto.getId())));
     }
 
     // ------------------------------------------
     // RF3: Cambiar estado de una versión (por Review/Coordinador)
     // ------------------------------------------
-    @Override
     @Transactional
-    public void cambiarEstadoFormatoA(Long versionId, EvaluacionRequest req) {
+    public void cambiarEstadoFormatoA(Long versionId, EvaluacionRequestDTO req) {
         FormatoA formato = formatoRepo.findById(versionId.intValue())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Versión de Formato A no existe"));
 
@@ -302,13 +296,11 @@ public class Submission implements ISubmissionPort {
         }
     }
 
-
     // ---------------------------
     // RF6: Subir Anteproyecto
     // ---------------------------
-    @Override
     @Transactional
-    public IdResponse subirAnteproyecto(String userId, AnteproyectoData data, MultipartFile pdf) {
+    public IdResponseDTO subirAnteproyecto(String userId, AnteproyectoDataDTO data, MultipartFile pdf) {
         validarArchivoPdfObligatorio(pdf);
 
         // CORRECCIÓN: Convertir de Long a Integer
@@ -370,17 +362,16 @@ public class Submission implements ISubmissionPort {
 
         notificationPublisher.publishNotification(notificacion, "Anteproyecto presentado");
 
-        return new IdResponse(parseLongSafeStringId(ant.getId().toString()));
+        return new IdResponseDTO(parseLongSafeStringId(ant.getId().toString()));
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public AnteproyectoPage listarAnteproyectos(int page, int size) {
+    public AnteproyectoPageDTO listarAnteproyectos(int page, int size) {
         var content = anteproyectoRepo.findAll().stream()
                 .sorted(Comparator.comparing(Anteproyecto::getFechaEnvio).reversed())
                 .limit(size)
                 .map(a -> {
-                    AnteproyectoView v = new AnteproyectoView();
+                    AnteproyectoViewDTO v = new AnteproyectoViewDTO();
                     v.setId(a.getId().longValue());
                     v.setProyectoId(a.getProyecto() != null ? safeParseLong(String.valueOf(a.getProyecto().getId())) : null);
                     v.setPdfUrl(a.getRutaArchivo());
@@ -389,7 +380,7 @@ public class Submission implements ISubmissionPort {
                     return v;
                 }).collect(Collectors.toList());
 
-        AnteproyectoPage pageRes = new AnteproyectoPage();
+        AnteproyectoPageDTO pageRes = new AnteproyectoPageDTO();
         pageRes.setContent(content);
         pageRes.setPage(page);
         pageRes.setSize(size);
@@ -397,9 +388,8 @@ public class Submission implements ISubmissionPort {
         return pageRes;
     }
 
-    @Override
     @Transactional
-    public void cambiarEstadoAnteproyecto(Long id, CambioEstadoAnteproyectoRequest req) {
+    public void cambiarEstadoAnteproyecto(Long id, CambioEstadoAnteproyectoRequestDTO req) {
         Anteproyecto ant = anteproyectoRepo.findById(id.intValue())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Anteproyecto no existe"));
         ant.setEstado(req.getEstado());
@@ -420,7 +410,7 @@ public class Submission implements ISubmissionPort {
         }
     }
 
-    private void validarCartaSiPractica(FormatoAData data, MultipartFile carta) {
+    private void validarCartaSiPractica(FormatoADataDTO data, MultipartFile carta) {
         if (data.getModalidad() == enumModalidad.PRACTICA_PROFESIONAL) {
             if (carta == null || carta.isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

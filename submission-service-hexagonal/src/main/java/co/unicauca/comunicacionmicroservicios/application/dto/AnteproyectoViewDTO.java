@@ -2,7 +2,7 @@ package co.unicauca.comunicacionmicroservicios.application.dto;
 
 import java.time.LocalDateTime;
 
-public class AnteproyectoView {
+public class AnteproyectoViewDTO {
     private Long id;
     private Long proyectoId;
     private String pdfUrl;

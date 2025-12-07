@@ -24,10 +24,10 @@ public interface FormatoAWebPort {
      *  - Crea proyecto de grado y versión v1 del Formato A (intentoActual=1).
      */
     @PostMapping
-    public ResponseEntity<IdResponse> crearFormatoA(
+    public ResponseEntity<IdResponseDTO> crearFormatoA(
             @RequestHeader("X-User-Role") String role,
             @RequestHeader("X-User-Id") String userId,
-            FormatoAData data,
+            FormatoADataDTO data,
             MultipartFile pdf,
             MultipartFile carta
     );
@@ -36,13 +36,13 @@ public interface FormatoAWebPort {
      * Obtiene detalles de una versión de Formato A (o vista agregada).
      */
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<FormatoAView> obtenerFormatoA(@PathVariable Long id);
+    public ResponseEntity<FormatoAViewDTO> obtenerFormatoA(@PathVariable Long id);
 
     /**
      * Lista Formato A (filtrable por docente).
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<FormatoAPage> listarFormatoA(
+    public ResponseEntity<FormatoAPageDTO> listarFormatoA(
             @RequestParam(name = "docenteId", required = false) String docenteId,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size
@@ -58,7 +58,7 @@ public interface FormatoAWebPort {
      *  - Máximo 3 intentos.
      */
     @PostMapping(path = "/{proyectoId}/nueva-version")
-    public ResponseEntity<IdResponse> nuevaVersion(
+    public ResponseEntity<IdResponseDTO> nuevaVersion(
             @RequestHeader("X-User-Role") String role,
             @RequestHeader("X-User-Id") String userId,
             @PathVariable Long proyectoId,
@@ -74,7 +74,7 @@ public interface FormatoAWebPort {
     public ResponseEntity<Void> cambiarEstado(
             @RequestHeader(value = "X-Service", required = false) String caller,
             @PathVariable Long versionId,
-            EvaluacionRequest req
+            EvaluacionRequestDTO req
     );
 
 

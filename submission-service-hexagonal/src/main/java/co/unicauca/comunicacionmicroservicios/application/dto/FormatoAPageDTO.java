@@ -2,14 +2,14 @@ package co.unicauca.comunicacionmicroservicios.application.dto;
 
 import java.util.List;
 
-public class FormatoAPage {
-    private List<FormatoAView> content;
+public class FormatoAPageDTO {
+    private List<FormatoAViewDTO> content;
     private int page;
     private int size;
     private long totalElements;
 
-    public List<FormatoAView> getContent() { return content; }
-    public void setContent(List<FormatoAView> content) { this.content = content; }
+    public List<FormatoAViewDTO> getContent() { return content; }
+    public void setContent(List<FormatoAViewDTO> content) { this.content = content; }
 
     public int getPage() { return page; }
     public void setPage(int page) { this.page = page; }

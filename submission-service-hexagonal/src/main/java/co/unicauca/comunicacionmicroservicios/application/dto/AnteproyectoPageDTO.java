@@ -2,14 +2,14 @@ package co.unicauca.comunicacionmicroservicios.application.dto;
 
 import java.util.List;
 
-public class AnteproyectoPage {
-    private List<AnteproyectoView> content;
+public class AnteproyectoPageDTO {
+    private List<AnteproyectoViewDTO> content;
     private int page;
     private int size;
     private long totalElements;
 
-    public List<AnteproyectoView> getContent() { return content; }
-    public void setContent(List<AnteproyectoView> content) { this.content = content; }
+    public List<AnteproyectoViewDTO> getContent() { return content; }
+    public void setContent(List<AnteproyectoViewDTO> content) { this.content = content; }
 
     public int getPage() { return page; }
     public void setPage(int page) { this.page = page; }

@@ -1,6 +1,9 @@
 package co.unicauca.comunicacionmicroservicios.domain.ports.in.web;
 
-import co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in.web.DocumentProcessingController;
+import co.unicauca.comunicacionmicroservicios.application.dto.AnteproyectoRequestDTO;
+import co.unicauca.comunicacionmicroservicios.application.dto.DocumentProcessingRequestDTO;
+import co.unicauca.comunicacionmicroservicios.application.dto.FormatoACorregidoRequestDTO;
+import co.unicauca.comunicacionmicroservicios.application.dto.FormatoARequestDTO;
 import co.unicauca.comunicacionmicroservicios.domain.services.template.ProcessResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,28 +21,28 @@ public interface DocumentProcessingWebPort {
 //    @Operation(summary = "Procesar documento usando Template Method Pattern")
     public ResponseEntity<ProcessResult> procesarDocumento(
             @PathVariable String proyectoId,
-            DocumentProcessingController.DocumentProcessingRequest request
+            DocumentProcessingRequestDTO request
     );
 
     @PostMapping("/proyecto/{proyectoId}/formato-a")
 //    @Operation(summary = "Procesar Formato A (endpoint específico)")
     public ResponseEntity<ProcessResult> procesarFormatoA(
             @PathVariable String proyectoId,
-            DocumentProcessingController.FormatoARequest request
+            FormatoARequestDTO request
     );
 
     @PostMapping("/proyecto/{proyectoId}/anteproyecto")
 //    @Operation(summary = "Procesar Anteproyecto (endpoint específico)")
     public ResponseEntity<ProcessResult> procesarAnteproyecto(
             @PathVariable String proyectoId,
-            DocumentProcessingController.AnteproyectoRequest request
+            AnteproyectoRequestDTO request
     );
 
     @PostMapping("/proyecto/{proyectoId}/formato-a/corregido")
 //    @Operation(summary = "Reenviar Formato A con correcciones")
     public ResponseEntity<ProcessResult> reenviarFormatoACorregido(
             @PathVariable String proyectoId,
-            DocumentProcessingController.FormatoACorregidoRequest request
+            FormatoACorregidoRequestDTO request
     );
 
     @GetMapping("/proyecto/{proyectoId}/permisos")

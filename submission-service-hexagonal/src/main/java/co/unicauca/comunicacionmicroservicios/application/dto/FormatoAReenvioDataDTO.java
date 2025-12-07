@@ -3,7 +3,7 @@ package co.unicauca.comunicacionmicroservicios.application.dto;
 import jakarta.validation.constraints.Size;
 
 /** Datos opcionales para un reenvío del Formato A (RF4). */
-public class FormatoAReenvioData {
+public class FormatoAReenvioDataDTO {
     @Size(max = 1000)
     private String comentarioDocente;
 

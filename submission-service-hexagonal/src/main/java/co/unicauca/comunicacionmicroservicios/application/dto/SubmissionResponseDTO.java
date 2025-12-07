@@ -7,14 +7,14 @@ package co.unicauca.comunicacionmicroservicios.application.dto;
  *
  * @author USUARIO
  */
-public class SubmissionResponse {
+public class SubmissionResponseDTO {
     private Integer proyectoId;
     private String estado;
 
-    public SubmissionResponse() {
+    public SubmissionResponseDTO() {
     }
 
-    public SubmissionResponse(Integer proyectoId, String estado) {
+    public SubmissionResponseDTO(Integer proyectoId, String estado) {
         this.proyectoId = proyectoId;
         this.estado = estado;
     }

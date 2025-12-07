@@ -37,6 +37,4 @@ public interface INotificationPublisherPort {
     // ================== MÉTODOS ADICIONALES PARA STATE PATTERN ==================
 
     public void notificarFormatoAPresentado(ProyectoGrado proyecto, String contenido);
-
-
 }

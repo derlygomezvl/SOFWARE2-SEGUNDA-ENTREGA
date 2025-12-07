@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /** Cambiar estado del anteproyecto (si lo maneja Review/Jefe). */
-public class CambioEstadoAnteproyectoRequest {
+public class CambioEstadoAnteproyectoRequestDTO {
 
     @NotBlank
     private String estado; // usa un enum tuyo si ya lo tienes

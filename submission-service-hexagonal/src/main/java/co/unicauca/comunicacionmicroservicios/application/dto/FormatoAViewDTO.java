@@ -4,7 +4,7 @@ import co.unicauca.comunicacionmicroservicios.domain.model.enumEstadoFormato;
 import java.time.LocalDateTime;
 
 /** Vista simple de una versión de Formato A. */
-public class FormatoAView {
+public class FormatoAViewDTO {
     private Long id;
     private Long proyectoId;
     private Integer version;                  // número de intento

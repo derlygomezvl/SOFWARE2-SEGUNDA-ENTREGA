@@ -2,7 +2,7 @@ package co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in.web;
 
 import co.unicauca.comunicacionmicroservicios.application.dto.*;
 import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.FormatoAWebPort;
-import co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in.Submission;
+import co.unicauca.comunicacionmicroservicios.domain.services.SubmissionService;
 import co.unicauca.comunicacionmicroservicios.infrastructure.util.SecurityRules;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,35 +24,35 @@ import java.util.Optional;
 @RequestMapping("/api/submissions/formatoA")
 public class FormatoAController implements FormatoAWebPort {
 
-    private final Submission service;
+    private final SubmissionService service;
 
     // Constructor explícito en lugar de @RequiredArgsConstructor
-    public FormatoAController(Submission service) {
+    public FormatoAController(SubmissionService service) {
         this.service = service;
     }
 
     @Override
-    public ResponseEntity<IdResponse> crearFormatoA(
+    public ResponseEntity<IdResponseDTO> crearFormatoA(
         String role,
         String userId,
-        FormatoAData data,
+        FormatoADataDTO data,
         MultipartFile pdf,
         MultipartFile carta
     )
     {
         SecurityRules.requireDocente(role);
-        IdResponse resp = service.crearFormatoA(userId, data, pdf, carta);
+        IdResponseDTO resp = service.crearFormatoA(userId, data, pdf, carta);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
     @Override
-    public ResponseEntity<FormatoAView> obtenerFormatoA(Long id)
+    public ResponseEntity<FormatoAViewDTO> obtenerFormatoA(Long id)
     {
         return ResponseEntity.ok(service.obtenerFormatoA(id));
     }
 
     @Override
-    public ResponseEntity<FormatoAPage> listarFormatoA(
+    public ResponseEntity<FormatoAPageDTO> listarFormatoA(
         String docenteId,
         int page,
         int size
@@ -62,7 +62,7 @@ public class FormatoAController implements FormatoAWebPort {
     }
 
     @Override
-    public ResponseEntity<IdResponse> nuevaVersion(
+    public ResponseEntity<IdResponseDTO> nuevaVersion(
         String role,
         String userId,
         Long proyectoId,
@@ -71,7 +71,7 @@ public class FormatoAController implements FormatoAWebPort {
     )
     {
         SecurityRules.requireDocente(role);
-        IdResponse resp = service.reenviarFormatoA(userId, proyectoId, pdf, carta);
+        IdResponseDTO resp = service.reenviarFormatoA(userId, proyectoId, pdf, carta);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
@@ -79,7 +79,7 @@ public class FormatoAController implements FormatoAWebPort {
     public ResponseEntity<Void> cambiarEstado(
         String caller,
         Long versionId,
-        EvaluacionRequest req
+        EvaluacionRequestDTO req
     )
     {
         SecurityRules.requireInternalReviewService(caller);

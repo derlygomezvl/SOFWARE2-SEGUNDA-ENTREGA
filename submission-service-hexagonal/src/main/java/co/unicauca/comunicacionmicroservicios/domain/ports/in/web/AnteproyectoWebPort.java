@@ -1,9 +1,9 @@
 package co.unicauca.comunicacionmicroservicios.domain.ports.in.web;
 
-import co.unicauca.comunicacionmicroservicios.application.dto.AnteproyectoData;
-import co.unicauca.comunicacionmicroservicios.application.dto.AnteproyectoPage;
-import co.unicauca.comunicacionmicroservicios.application.dto.CambioEstadoAnteproyectoRequest;
-import co.unicauca.comunicacionmicroservicios.application.dto.IdResponse;
+import co.unicauca.comunicacionmicroservicios.application.dto.AnteproyectoDataDTO;
+import co.unicauca.comunicacionmicroservicios.application.dto.AnteproyectoPageDTO;
+import co.unicauca.comunicacionmicroservicios.application.dto.CambioEstadoAnteproyectoRequestDTO;
+import co.unicauca.comunicacionmicroservicios.application.dto.IdResponseDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,15 +23,15 @@ public interface AnteproyectoWebPort {
      *  - No debe existir anteproyecto previo para el proyecto.
      */
     @PostMapping
-    public ResponseEntity<IdResponse> subirAnteproyecto(
+    public ResponseEntity<IdResponseDTO> subirAnteproyecto(
             @RequestHeader("X-User-Role") String role,
             @RequestHeader("X-User-Id") String userId,
-            AnteproyectoData data,
+            AnteproyectoDataDTO data,
             MultipartFile pdf
     );
 
     @GetMapping
-    public ResponseEntity<AnteproyectoPage> listarAnteproyectos(
+    public ResponseEntity<AnteproyectoPageDTO> listarAnteproyectos(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size
     );
@@ -43,7 +43,7 @@ public interface AnteproyectoWebPort {
     public ResponseEntity<Void> cambiarEstadoAnteproyecto(
             @RequestHeader(value = "X-Service", required = false) String caller,
             @PathVariable Long id,
-            CambioEstadoAnteproyectoRequest req
+            CambioEstadoAnteproyectoRequestDTO req
     );
 
 

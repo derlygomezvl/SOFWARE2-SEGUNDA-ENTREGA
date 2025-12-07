@@ -3,7 +3,7 @@ package co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in.web;
 import co.unicauca.comunicacionmicroservicios.application.dto.*;
 import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.AnteproyectoWebPort;
 import co.unicauca.comunicacionmicroservicios.infrastructure.util.SecurityRules;
-import co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in.Submission;
+import co.unicauca.comunicacionmicroservicios.domain.services.SubmissionService;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,28 +19,28 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/submissions/anteproyecto")
 public class AnteproyectoController implements AnteproyectoWebPort {
 
-    private final Submission service;
+    private final SubmissionService service;
 
     // Constructor explícito en lugar de @RequiredArgsConstructor
-    public AnteproyectoController(Submission service) {
+    public AnteproyectoController(SubmissionService service) {
         this.service = service;
     }
 
     @Override
-    public ResponseEntity<IdResponse> subirAnteproyecto(
+    public ResponseEntity<IdResponseDTO> subirAnteproyecto(
         String role,
         String userId,
-        AnteproyectoData data,
+        AnteproyectoDataDTO data,
         MultipartFile pdf
     )
     {
         SecurityRules.requireDocente(role);
-        IdResponse resp = service.subirAnteproyecto(userId, data, pdf);
+        IdResponseDTO resp = service.subirAnteproyecto(userId, data, pdf);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
     @Override
-    public ResponseEntity<AnteproyectoPage> listarAnteproyectos(
+    public ResponseEntity<AnteproyectoPageDTO> listarAnteproyectos(
         int page,
         int size
     )
@@ -52,7 +52,7 @@ public class AnteproyectoController implements AnteproyectoWebPort {
     public ResponseEntity<Void> cambiarEstadoAnteproyecto(
         String caller,
         Long id,
-        CambioEstadoAnteproyectoRequest req
+        CambioEstadoAnteproyectoRequestDTO req
     )
     {
         SecurityRules.requireInternalReviewService(caller);

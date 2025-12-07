@@ -1,11 +1,11 @@
 package co.unicauca.comunicacionmicroservicios.application.dto;
 
-public class IdResponse {
+public class IdResponseDTO {
     private Long id;
 
-    public IdResponse() {}
+    public IdResponseDTO() {}
     
-    public IdResponse(Long id) {
+    public IdResponseDTO(Long id) {
         this.id = id;
     }
 

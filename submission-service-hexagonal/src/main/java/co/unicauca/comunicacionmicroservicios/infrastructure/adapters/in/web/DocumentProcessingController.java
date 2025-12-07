@@ -1,5 +1,9 @@
 package co.unicauca.comunicacionmicroservicios.infrastructure.adapters.in.web;
 
+import co.unicauca.comunicacionmicroservicios.application.dto.AnteproyectoRequestDTO;
+import co.unicauca.comunicacionmicroservicios.application.dto.DocumentProcessingRequestDTO;
+import co.unicauca.comunicacionmicroservicios.application.dto.FormatoACorregidoRequestDTO;
+import co.unicauca.comunicacionmicroservicios.application.dto.FormatoARequestDTO;
 import co.unicauca.comunicacionmicroservicios.domain.ports.in.web.DocumentProcessingWebPort;
 import co.unicauca.comunicacionmicroservicios.domain.services.DocumentProcessingService;
 import co.unicauca.comunicacionmicroservicios.domain.services.ProjectStateService;
@@ -27,7 +31,7 @@ public class DocumentProcessingController implements DocumentProcessingWebPort {
     @Override
     public ResponseEntity<ProcessResult> procesarDocumento(
         String proyectoId,
-        DocumentProcessingRequest request
+        DocumentProcessingRequestDTO request
     )
     {
         DocumentData documentData = DocumentData.builder()
@@ -54,7 +58,7 @@ public class DocumentProcessingController implements DocumentProcessingWebPort {
     @Override
     public ResponseEntity<ProcessResult> procesarFormatoA(
         String proyectoId,
-        FormatoARequest request
+        FormatoARequestDTO request
     )
     {
         DocumentData documentData = DocumentData.createFormatoAData(
@@ -77,7 +81,7 @@ public class DocumentProcessingController implements DocumentProcessingWebPort {
     @Override
     public ResponseEntity<ProcessResult> procesarAnteproyecto(
         String proyectoId,
-        AnteproyectoRequest request
+        AnteproyectoRequestDTO request
     )
     {
         DocumentData documentData = DocumentData.createAnteproyectoData(
@@ -97,7 +101,7 @@ public class DocumentProcessingController implements DocumentProcessingWebPort {
     @Override
     public ResponseEntity<ProcessResult> reenviarFormatoACorregido(
         String proyectoId,
-        FormatoACorregidoRequest request
+        FormatoACorregidoRequestDTO request
     )
     {
         DocumentData documentData = DocumentData.createFormatoACorregidoData(
@@ -135,95 +139,5 @@ public class DocumentProcessingController implements DocumentProcessingWebPort {
     public ResponseEntity<Map<String, String>> obtenerTiposDocumento()
     {
         return ResponseEntity.ok(documentProcessingService.getTiposDocumentoSoportados());
-    }
-
-    // DTOs para las requests
-    public static class DocumentProcessingRequest {
-        private String tipoDocumento;
-        private String contenido;
-        private String usuarioId;
-        private String titulo;
-        private String modalidad;
-        private String objetivoGeneral;
-        private String objetivosEspecificos;
-        private String archivoAdjunto;
-        private Map<String, Object> metadata;
-
-        // Getters y Setters
-        public String getTipoDocumento() { return tipoDocumento; }
-        public void setTipoDocumento(String tipoDocumento) { this.tipoDocumento = tipoDocumento; }
-        public String getContenido() { return contenido; }
-        public void setContenido(String contenido) { this.contenido = contenido; }
-        public String getUsuarioId() { return usuarioId; }
-        public void setUsuarioId(String usuarioId) { this.usuarioId = usuarioId; }
-        public String getTitulo() { return titulo; }
-        public void setTitulo(String titulo) { this.titulo = titulo; }
-        public String getModalidad() { return modalidad; }
-        public void setModalidad(String modalidad) { this.modalidad = modalidad; }
-        public String getObjetivoGeneral() { return objetivoGeneral; }
-        public void setObjetivoGeneral(String objetivoGeneral) { this.objetivoGeneral = objetivoGeneral; }
-        public String getObjetivosEspecificos() { return objetivosEspecificos; }
-        public void setObjetivosEspecificos(String objetivosEspecificos) { this.objetivosEspecificos = objetivosEspecificos; }
-        public String getArchivoAdjunto() { return archivoAdjunto; }
-        public void setArchivoAdjunto(String archivoAdjunto) { this.archivoAdjunto = archivoAdjunto; }
-        public Map<String, Object> getMetadata() { return metadata; }
-        public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
-    }
-
-    public static class FormatoARequest {
-        private String contenido;
-        private String usuarioId;
-        private String titulo;
-        private String modalidad;
-        private String objetivoGeneral;
-        private String objetivosEspecificos;
-        private String archivoAdjunto;
-
-        // Getters y Setters
-        public String getContenido() { return contenido; }
-        public void setContenido(String contenido) { this.contenido = contenido; }
-        public String getUsuarioId() { return usuarioId; }
-        public void setUsuarioId(String usuarioId) { this.usuarioId = usuarioId; }
-        public String getTitulo() { return titulo; }
-        public void setTitulo(String titulo) { this.titulo = titulo; }
-        public String getModalidad() { return modalidad; }
-        public void setModalidad(String modalidad) { this.modalidad = modalidad; }
-        public String getObjetivoGeneral() { return objetivoGeneral; }
-        public void setObjetivoGeneral(String objetivoGeneral) { this.objetivoGeneral = objetivoGeneral; }
-        public String getObjetivosEspecificos() { return objetivosEspecificos; }
-        public void setObjetivosEspecificos(String objetivosEspecificos) { this.objetivosEspecificos = objetivosEspecificos; }
-        public String getArchivoAdjunto() { return archivoAdjunto; }
-        public void setArchivoAdjunto(String archivoAdjunto) { this.archivoAdjunto = archivoAdjunto; }
-    }
-
-    public static class AnteproyectoRequest {
-        private String contenido;
-        private String usuarioId;
-        private String titulo;
-        private String archivoAdjunto;
-
-        // Getters y Setters
-        public String getContenido() { return contenido; }
-        public void setContenido(String contenido) { this.contenido = contenido; }
-        public String getUsuarioId() { return usuarioId; }
-        public void setUsuarioId(String usuarioId) { this.usuarioId = usuarioId; }
-        public String getTitulo() { return titulo; }
-        public void setTitulo(String titulo) { this.titulo = titulo; }
-        public String getArchivoAdjunto() { return archivoAdjunto; }
-        public void setArchivoAdjunto(String archivoAdjunto) { this.archivoAdjunto = archivoAdjunto; }
-    }
-
-    public static class FormatoACorregidoRequest {
-        private String contenido;
-        private String usuarioId;
-        private String observacionesAnteriores;
-
-        // Getters y Setters
-        public String getContenido() { return contenido; }
-        public void setContenido(String contenido) { this.contenido = contenido; }
-        public String getUsuarioId() { return usuarioId; }
-        public void setUsuarioId(String usuarioId) { this.usuarioId = usuarioId; }
-        public String getObservacionesAnteriores() { return observacionesAnteriores; }
-        public void setObservacionesAnteriores(String observacionesAnteriores) { this.observacionesAnteriores = observacionesAnteriores; }
     }
 }

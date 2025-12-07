@@ -11,15 +11,15 @@ package co.unicauca.comunicacionmicroservicios.application.dto;
 
 import java.util.List;
 
-public class SubmissionMessage {
+public class SubmissionMessageDTO {
     private Integer proyectoId;
     private String titulo;
     private List<String> autoresEmails;
 
-    public SubmissionMessage() {
+    public SubmissionMessageDTO() {
     }
 
-    public SubmissionMessage(Integer proyectoId, String titulo, List<String> autoresEmails) {
+    public SubmissionMessageDTO(Integer proyectoId, String titulo, List<String> autoresEmails) {
         this.proyectoId = proyectoId;
         this.titulo = titulo;
         this.autoresEmails = autoresEmails;

@@ -4,7 +4,7 @@ import co.unicauca.comunicacionmicroservicios.domain.model.enumEstadoFormato;
 import jakarta.validation.constraints.*;
 
 /** Cambiar estado de una versión de Formato A: APROBADO o RECHAZADO. */
-public class EvaluacionRequest {
+public class EvaluacionRequestDTO {
 
     @NotNull
     private enumEstadoFormato estado; // APROBADO | RECHAZADO
