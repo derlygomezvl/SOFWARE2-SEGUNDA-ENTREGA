@@ -1,0 +1,80 @@
+# src/main/resources/application.yml
+spring:
+  application:
+    name: review-service
+
+  # H2 Database para desarrollo
+  datasource:
+    url: jdbc:h2:mem:reviewdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+    hikari:
+      maximum-pool-size: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # Configuración básica RabbitMQ (puede fallar, pero la aplicación arrancará)
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    connection-timeout: 5s
+
+  # Evitar que falle por RabbitMQ
+  #autoconfigure:
+   # exclude:
+    #  - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+# Puerto
+server:
+  port: 8084
+  servlet:
+    context-path: /api
+
+# URLs de servicios (pueden ser mock)
+services:
+  submission:
+    base-url: http://localhost:8082
+    timeout: 3000
+  identity:
+    base-url: http://localhost:8081
+    timeout: 3000
+
+# Configuración evaluación
+evaluation:
+  exchange: evaluation.exchange
+  queue: evaluation.notifications.queue
+  routing-key: evaluation.completed
+
+# Logging
+logging:
+  level:
+    root: INFO
+    co.unicauca.review: DEBUG
+    org.springframework.web: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Configuración Swagger
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true

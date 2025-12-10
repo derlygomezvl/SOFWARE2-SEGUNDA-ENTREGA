@@ -2,15 +2,19 @@ package co.unicauca.review.client;
 
 import co.unicauca.review.dto.response.FormatoAReviewDTO;
 import co.unicauca.review.exception.ResourceNotFoundException;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import co.unicauca.review.enums.Decision;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +50,7 @@ public class SubmissionServiceClient {
 
         try {
             return webClient.get()
-                    .uri("/api/submissions/anteproyectos/{id}", anteproyectoId)
+                    .uri("/api/submissions/anteproyecto/{id}", anteproyectoId)
                     .retrieve()
                     .bodyToMono(AnteproyectoDTO.class)
                     .block();
@@ -102,7 +106,8 @@ public class SubmissionServiceClient {
 
         try {
             webClient.patch()
-                    .uri("/api/submissions/anteproyectos/{id}/estado", anteproyectoId)
+                    .uri("/api/submissions/anteproyecto/{id}/estado", anteproyectoId)
+                    .header("X-Service", "REVIEW_SERVICE")
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(Void.class)
@@ -172,6 +177,19 @@ public class SubmissionServiceClient {
 
         public List<String> getEstudiantesEmails() { return estudiantesEmails; }
         public void setEstudiantesEmails(List<String> emails) { this.estudiantesEmails = emails; }
+    }
+    // Nuevo método para implementar la llamada desde AsignacionService
+    public void cambiarEstadoAnteproyecto(Long anteproyectoId, Decision finalDecision) {
+        log.debug("Cambiando estado de Anteproyecto {} a decisión final: {}", anteproyectoId, finalDecision);
+
+        // Creamos el cuerpo de la solicitud en el formato que ya usa updateAnteproyectoEstado
+        // Asumimos que Submission Service espera {"estado": "APROBADO" o "RECHAZADO"}
+        Map<String, String> body = Map.of("estado", finalDecision.name());
+
+        // Reutilizamos el método existente para ejecutar la lógica de WebClient
+        updateAnteproyectoEstado(anteproyectoId, body);
+
+        log.info("Estado de Anteproyecto {} actualizado exitosamente a: {}", anteproyectoId, finalDecision);
     }
 }
 
