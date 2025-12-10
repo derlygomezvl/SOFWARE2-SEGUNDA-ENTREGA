@@ -31,7 +31,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/submissions/anteproyecto/**").hasRole("DOCENTE")
+//                        .requestMatchers("/api/submissions/anteproyecto/**").hasRole("DOCENTE")
+                        .requestMatchers("/api/submissions/anteproyecto/**").hasRole("JEFE_DEPARTAMENTO")
                         .requestMatchers("/api/documents/**").permitAll()
                         .requestMatchers("/api/submissions/formatoA/**").hasRole("DOCENTE")
                         .requestMatchers("/api/project-state/**").permitAll()
