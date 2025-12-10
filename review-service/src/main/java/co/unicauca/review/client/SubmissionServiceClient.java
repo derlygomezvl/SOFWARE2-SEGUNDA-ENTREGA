@@ -107,7 +107,7 @@ public class SubmissionServiceClient {
         try {
             webClient.patch()
                     .uri("/api/submissions/anteproyecto/{id}/estado", anteproyectoId)
-                    .header("X-Service", "REVIEW_SERVICE")
+                    .header("X-Service", "review") // CAMBIO CLAVE: Reemplazado "REVIEW_SERVICE" por "review"
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(Void.class)

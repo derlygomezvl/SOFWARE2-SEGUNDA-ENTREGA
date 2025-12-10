@@ -59,4 +59,20 @@ public class AnteproyectoController implements IAnteproyectoWebPort {
         service.cambiarEstadoAnteproyecto(id, req);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * NUEVO: Implementación del endpoint GET /{id}
+     */
+    @Override
+    @GetMapping(path = "/{id}") // Esto ya está en la interfaz, pero se mantiene para claridad
+    public ResponseEntity<AnteproyectoViewDTO> obtenerAnteproyecto(
+            @PathVariable Long id
+    )
+    {
+        // No se requiere SecurityRules.requireInternalReviewService(caller)
+        // si el DTO AnteproyectoViewDTO no revela información sensible que no
+        // deba ser vista por un token JWT válido (Autenticación Keycloak),
+        // que es lo que asumimos en los endpoints de lectura.
+        return ResponseEntity.ok(service.obtenerAnteproyecto(id));
+    }
 }

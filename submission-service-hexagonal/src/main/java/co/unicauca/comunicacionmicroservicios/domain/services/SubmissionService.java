@@ -365,6 +365,26 @@ public class SubmissionService {
         return new IdResponseDTO(parseLongSafeStringId(ant.getId().toString()));
     }
 
+    // ---------------------------
+    // Lectura de Anteproyecto por ID (NUEVO)
+    // ---------------------------
+    @Transactional(readOnly = true)
+    public AnteproyectoViewDTO obtenerAnteproyecto(Long id) {
+        Anteproyecto ant = anteproyectoRepo.findById(id.intValue())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Anteproyecto no encontrado"));
+
+        // Se usa AnteproyectoViewDTO ya que es el DTO de vista existente.
+        AnteproyectoViewDTO view = new AnteproyectoViewDTO();
+        view.setId(ant.getId().longValue());
+        view.setProyectoId(ant.getProyecto() != null ? safeParseLong(String.valueOf(ant.getProyecto().getId())) : null);
+        view.setPdfUrl(ant.getRutaArchivo());
+        view.setFechaEnvio(ant.getFechaEnvio());
+        view.setEstado(ant.getEstado());
+        // Aquí podrías añadir más información del proyecto (ej. título) si es necesario en el DTO
+
+        return view;
+    }
+
     @Transactional(readOnly = true)
     public AnteproyectoPageDTO listarAnteproyectos(int page, int size) {
         var content = anteproyectoRepo.findAll().stream()

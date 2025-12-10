@@ -1,9 +1,6 @@
 package co.unicauca.comunicacionmicroservicios.domain.ports.in.web;
 
-import co.unicauca.comunicacionmicroservicios.application.dto.AnteproyectoDataDTO;
-import co.unicauca.comunicacionmicroservicios.application.dto.AnteproyectoPageDTO;
-import co.unicauca.comunicacionmicroservicios.application.dto.CambioEstadoAnteproyectoRequestDTO;
-import co.unicauca.comunicacionmicroservicios.application.dto.IdResponseDTO;
+import co.unicauca.comunicacionmicroservicios.application.dto.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,6 +42,11 @@ public interface IAnteproyectoWebPort {
             @PathVariable Long id,
             CambioEstadoAnteproyectoRequestDTO req
     );
+    /**
+     * NUEVO: Obtener un anteproyecto por ID (necesario para Review Service)
+     */
+    @GetMapping(path = "/{id}") // 👈 Endpoint faltante
+    public ResponseEntity<AnteproyectoViewDTO> obtenerAnteproyecto(@PathVariable Long id);
 
 
 }
