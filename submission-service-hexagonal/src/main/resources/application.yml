@@ -1,0 +1,70 @@
+server:
+  port: 8082
+
+spring:
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:./data/submission_service.sqlite
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+
+
+  rabbitmq:
+    host: disabled
+    port: 0
+    username: disabled
+    password: disabled
+
+jwt:
+  secret: test-secret-key-for-jwt-validation-minimum-256-bits-long
+  expiration: 86400000
+
+# Exchanges y routing keys que usa RabbitConfig
+#submission:
+ # exchanges:
+  #  formato-a: formato-a-exchange
+   # anteproyecto: anteproyecto-exchange
+    #proyecto: proyecto-exchange
+  #routing:
+   # formato-a-enviado: formato-a.enviado
+    #formato-a-reenviado: formato-a.reenviado
+    #anteproyecto-enviado: anteproyecto.enviado
+    #proyecto-rechazo-def: proyecto.rechazado-definitivamente
+
+notification:
+  base-url: http://localhost:8083/api/notifications
+  timeout-ms: 3000
+
+file:
+  storage:
+    path: /app/uploads
+
+logging:
+  level:
+    root: INFO
+    co.unicauca.comunicacionmicroservicios: DEBUG
+    org.springframework.amqp: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint.health.show-details: always
+  health:
+    rabbit:
+      enabled: false  # ✅ Esto arreglará el health check inmediatamente
+
+  spring:
+    rabbitmq:
+      listener:
+        simple:
+          auto-startup: false
+        direct:
+          auto-startup: false
+      dynamic: false
+
