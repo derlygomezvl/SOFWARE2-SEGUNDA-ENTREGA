@@ -37,9 +37,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Endpoints públicos (sin autenticación)
                         .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/verify-token").permitAll()
+                        .requestMatchers("/api/auth/users/search").permitAll() // ✅ PERMITIDO SIN AUTENTICACIÓN
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // Todos los demás endpoints requieren autenticación
                         .anyRequest().authenticated()
                 )
                 // Aplicar rate limiting antes que JWT para proteger endpoints de autenticación

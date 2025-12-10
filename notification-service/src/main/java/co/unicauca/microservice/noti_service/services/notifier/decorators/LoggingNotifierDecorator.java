@@ -120,6 +120,12 @@ public class LoggingNotifierDecorator implements Notifier {
      * Obtiene una representación de string de los destinatarios
      */
     private String getRecipientsString(NotificationRequest request) {
+        if (request.recipients() == null) {
+            return "null";
+        }
+        if (request.recipients().isEmpty()) {
+            return "empty";
+        }
         if (request.recipients().size() == 1) {
             return request.recipients().get(0).email();
         }

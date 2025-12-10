@@ -27,7 +27,7 @@ public class NotifierConfig {
             BaseNotifierService baseService,
             NotificationValidator validator,
             NotificationLogger notificationLogger,
-            @Value("${notifications.features.validation:true}") boolean validationEnabled,
+            @Value("${notifications.features.validation:false}") boolean validationEnabled, // Cambiado a false por defecto
             @Value("${notifications.features.logging:true}") boolean loggingEnabled
     ) {
         log.info("Configuring Notifier with features: validation={}, logging={}",
@@ -37,18 +37,19 @@ public class NotifierConfig {
 
         // Aplicar decoradores en orden específico (innermost to outermost)
 
-        // 1. Validación (primero - innermost)
-        // Debe fallar rápido antes de cualquier procesamiento
-        if (validationEnabled) {
-            log.info("✓ Validation decorator enabled");
-            notifier = new ValidationNotifierDecorator(notifier, validator);
-        }
-
-        // 2. Logging (último - outermost)
-        // Logging al final para capturar todo el flujo
+        // 1. Logging (primero para desarrollo)
         if (loggingEnabled) {
             log.info("✓ Logging decorator enabled");
             notifier = new LoggingNotifierDecorator(notifier, notificationLogger);
+        }
+
+        // 2. Validación (solo si está habilitada)
+        // COMENTADA TEMPORALMENTE PARA DESARROLLO
+        if (validationEnabled) {
+            log.info("✓ Validation decorator enabled");
+            notifier = new ValidationNotifierDecorator(notifier, validator);
+        } else {
+            log.info("✗ Validation decorator disabled (development mode)");
         }
 
         log.info("Notifier configured successfully with {} active decorators",

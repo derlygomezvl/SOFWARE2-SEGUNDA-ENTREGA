@@ -74,7 +74,7 @@ public class NotificationLogger {
                 StructuredArguments.kv("event", "NOTIFICATION_PROCESSING"),
                 StructuredArguments.kv("timestamp", LocalDateTime.now().format(formatter)),
                 StructuredArguments.kv("correlationId", correlationId),
-                StructuredArguments.kv("type", channel.toUpperCase()),
+                StructuredArguments.kv("type", channel != null ? channel.toUpperCase() : "UNKNOWN"),
                 StructuredArguments.kv("recipient", recipient),
                 StructuredArguments.kv("mode", isAsync ? "ASYNC" : "SYNC"),
                 StructuredArguments.kv("status", "PROCESSING")

@@ -8,6 +8,7 @@ public class AnteproyectoView {
     private String pdfUrl;
     private LocalDateTime fechaEnvio;
     private String estado; // si manejas estados de anteproyecto
+    private String titulo;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -23,4 +24,7 @@ public class AnteproyectoView {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
 }
