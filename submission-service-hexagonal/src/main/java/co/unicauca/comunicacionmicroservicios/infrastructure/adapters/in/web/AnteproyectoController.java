@@ -34,7 +34,7 @@ public class AnteproyectoController implements IAnteproyectoWebPort {
         MultipartFile pdf
     )
     {
-        SecurityRules.requireDocente(role);
+//        SecurityRules.requireDocente(role);
         IdResponseDTO resp = service.subirAnteproyecto(userId, data, pdf);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
@@ -55,7 +55,7 @@ public class AnteproyectoController implements IAnteproyectoWebPort {
         CambioEstadoAnteproyectoRequestDTO req
     )
     {
-        SecurityRules.requireInternalReviewService(caller);
+//        SecurityRules.requireInternalReviewService(caller);
         service.cambiarEstadoAnteproyecto(id, req);
         return ResponseEntity.ok().build();
     }

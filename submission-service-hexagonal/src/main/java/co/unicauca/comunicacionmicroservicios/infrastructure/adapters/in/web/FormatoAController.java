@@ -40,7 +40,7 @@ public class FormatoAController implements IFormatoAWebPort {
         MultipartFile carta
     )
     {
-        SecurityRules.requireDocente(role);
+//        SecurityRules.requireDocente(role);
         IdResponseDTO resp = service.crearFormatoA(userId, data, pdf, carta);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
@@ -70,7 +70,7 @@ public class FormatoAController implements IFormatoAWebPort {
         MultipartFile carta
     )
     {
-        SecurityRules.requireDocente(role);
+//        SecurityRules.requireDocente(role);
         IdResponseDTO resp = service.reenviarFormatoA(userId, proyectoId, pdf, carta);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
@@ -82,7 +82,7 @@ public class FormatoAController implements IFormatoAWebPort {
         EvaluacionRequestDTO req
     )
     {
-        SecurityRules.requireInternalReviewService(caller);
+//        SecurityRules.requireInternalReviewService(caller);
         service.cambiarEstadoFormatoA(versionId, req);
         return ResponseEntity.ok().build();
     }

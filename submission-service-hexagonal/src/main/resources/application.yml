@@ -11,16 +11,24 @@ spring:
       ddl-auto: create
     show-sql: true
 
-
   rabbitmq:
     host: disabled
     port: 0
     username: disabled
     password: disabled
 
-jwt:
-  secret: test-secret-key-for-jwt-validation-minimum-256-bits-long
-  expiration: 86400000
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/submission-service
+
+#jwt:
+#  secret: test-secret-key-for-jwt-validation-minimum-256-bits-long
+#  expiration: 86400000
+
+keycloak:
+  realm: submission-service
 
 # Exchanges y routing keys que usa RabbitConfig
 #submission:
