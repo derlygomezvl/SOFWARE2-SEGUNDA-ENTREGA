@@ -39,6 +39,13 @@ spring:
    # exclude:
     #  - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
 
+# Configuración M2M para Keycloak (Client Credentials Flow)
+keycloak:
+  m2m:
+    token-uri: http://localhost:8080/realms/submission-service/protocol/openid-connect/token
+    client-id: submission
+    client-secret: VTmZiCyba88qTyrslViSDIF4uh5pv1nf
+
 # Puerto
 server:
   port: 8084
