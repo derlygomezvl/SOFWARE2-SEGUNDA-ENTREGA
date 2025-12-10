@@ -16,6 +16,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.annotation.Lazy;
+import co.unicauca.review.enums.Decision;
+import co.unicauca.review.enums.AsignacionEstado;
+import java.time.LocalDateTime;
 
 import java.time.LocalDateTime;
 
@@ -26,12 +30,15 @@ public class AsignacionService {
 
     private final AsignacionEvaluadoresRepository asignacionRepository;
     private final SubmissionServiceClient submissionClient;
+    private final NotificationService notificationService; // NUEVO
 
     public AsignacionService(
             AsignacionEvaluadoresRepository asignacionRepository,
-            SubmissionServiceClient submissionClient) {
+            SubmissionServiceClient submissionClient,
+            @Lazy NotificationService notificationService) {
         this.asignacionRepository = asignacionRepository;
         this.submissionClient = submissionClient;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -60,9 +67,33 @@ public class AsignacionService {
 
         AsignacionEvaluadores saved = asignacionRepository.save(asignacion);
 
+        // NUEVO: Enviar notificaciones
+        notificarEvaluadoresAsignados(saved.getId());
+
         log.info("Asignación creada exitosamente: id={}", saved.getId());
 
         return mapToDTO(saved, anteproyecto.getTitulo());
+    }
+
+    // NUEVO: Método para notificar evaluadores
+    @Transactional
+    public void notificarEvaluadoresAsignados(Long asignacionId) {
+        AsignacionEvaluadores asignacion = asignacionRepository.findById(asignacionId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Asignación no encontrada: " + asignacionId
+                ));
+
+        String titulo = obtenerTituloAnteproyecto(asignacion.getAnteproyectoId());
+
+        // Esta llamada ahora usará la inyección de RabbitTemplate en NotificationService
+        notificationService.enviarNotificacionAsignacion(
+                asignacion.getAnteproyectoId(),
+                titulo,
+                asignacion.getEvaluador1Id(),
+                asignacion.getEvaluador2Id()
+        );
+
+        log.info("Notificaciones enviadas para asignación: {}", asignacionId);
     }
 
     @Transactional(readOnly = true)
@@ -106,6 +137,63 @@ public class AsignacionService {
             ));
 
         return mapToDTO(asignacion);
+    }
+
+    @Transactional
+    public void registrarDecision(Long asignacionId, Long evaluadorId, Decision decision, String observaciones) {
+        AsignacionEvaluadores asignacion = asignacionRepository.findById(asignacionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asignación no encontrada: " + asignacionId));
+
+        // 1. Validación de pertenencia: El evaluador debe ser evaluador1 o evaluador2
+        if (!evaluadorId.equals(asignacion.getEvaluador1Id()) && !evaluadorId.equals(asignacion.getEvaluador2Id())) {
+            throw new SecurityException("El usuario con ID " + evaluadorId + " no está asignado a esta revisión.");
+        }
+
+        // 2. Registrar la decisión en el campo correcto
+        if (evaluadorId.equals(asignacion.getEvaluador1Id())) {
+            if (asignacion.getEvaluador1Decision() != null) {
+                throw new IllegalStateException("El Evaluador 1 ya registró su decisión.");
+            }
+            asignacion.setEvaluador1Decision(decision);
+            asignacion.setEvaluador1Observaciones(observaciones);
+        } else { // evaluadorId.equals(asignacion.getEvaluador2Id())
+            if (asignacion.getEvaluador2Decision() != null) {
+                throw new IllegalStateException("El Evaluador 2 ya registró su decisión.");
+            }
+            asignacion.setEvaluador2Decision(decision);
+            asignacion.setEvaluador2Observaciones(observaciones);
+        }
+
+        // 3. Actualizar el estado de la asignación
+        if (asignacion.isCompletada()) {
+            asignacion.setFechaCompletado(LocalDateTime.now());
+            Decision finalDecision = asignacion.getFinalDecision();
+
+            // Mapeo de la decisión final a AsignacionEstado
+            if (finalDecision == Decision.APROBADO) {
+                asignacion.setEstado(AsignacionEstado.APROBADA);
+            } else {
+                asignacion.setEstado(AsignacionEstado.RECHAZADA);
+            }
+
+            // Llamada al Submission Service para cambiar el estado final del Anteproyecto
+            submissionClient.cambiarEstadoAnteproyecto(
+                    asignacion.getAnteproyectoId(),
+                    finalDecision
+            ); // Asegúrate de que este método exista en SubmissionServiceClient
+            // y en el SubmissionService (cambiarEstadoAnteproyecto)
+
+            log.info("Asignación {} completada con decisión final: {}. Notificando a Submission Service.",
+                    asignacionId, finalDecision);
+
+        } else {
+            // Si es la primera decisión, cambia el estado a EN_EVALUACION
+            if (asignacion.getEstado() == AsignacionEstado.PENDIENTE) {
+                asignacion.setEstado(AsignacionEstado.EN_EVALUACION);
+            }
+        }
+
+        asignacionRepository.save(asignacion);
     }
 
     /**

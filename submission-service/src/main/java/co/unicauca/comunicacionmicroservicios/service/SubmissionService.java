@@ -370,6 +370,28 @@ public class SubmissionService implements ISubmissionService {
         return new IdResponse(parseLongSafeStringId(ant.getId().toString()));
     }
 
+    /**
+     * NUEVO: Obtiene un Anteproyecto por ID.
+     */
+    @Transactional(readOnly = true)
+    public AnteproyectoView obtenerAnteproyecto(Long id) {
+        Anteproyecto ant = anteproyectoRepo.findById(id.intValue())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Anteproyecto no encontrado"));
+
+        AnteproyectoView v = new AnteproyectoView();
+        v.setId(ant.getId().longValue());
+        v.setProyectoId(ant.getProyecto() != null ? safeParseLong(String.valueOf(ant.getProyecto().getId())) : null);
+        v.setPdfUrl(ant.getRutaArchivo());
+        v.setFechaEnvio(ant.getFechaEnvio());
+        v.setEstado(ant.getEstado());
+
+        // Asume que la relación está cargada y el campo 'titulo' existe en ProyectoGrado.
+        String titulo = ant.getProyecto() != null ? ant.getProyecto().getTitulo() : "Sin título asociado";
+        v.setTitulo(titulo); // 👈 Asignar el nuevo campo
+
+        return v;
+    }
+
     @Override
     @Transactional(readOnly = true)
     public AnteproyectoPage listarAnteproyectos(int page, int size) {

@@ -57,6 +57,15 @@ public class AnteproyectoController {
     }
 
     /**
+     * NUEVO: Obtener un anteproyecto por ID (necesario para Review Service)
+     */
+    @GetMapping(path = "/{id}") // 👈 ESTE ES EL ENDPOINT FALTANTE
+    public ResponseEntity<AnteproyectoView> obtenerAnteproyecto(@PathVariable Long id) {
+        // Llama al nuevo método del servicio
+        return ResponseEntity.ok(service.obtenerAnteproyecto(id));
+    }
+
+    /**
      * Cambio de estado de un anteproyecto (invocado por Review/Jefe).
      */
     @PatchMapping(path = "/{id}/estado")
